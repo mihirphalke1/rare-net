@@ -1,0 +1,6 @@
+backend/venv
+backend/venv/*
+backend/venv/**
+
+backend/venv
+cursor_prompts.md

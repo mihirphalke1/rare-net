@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  cyborgdb:
+    image: cyborginc/cyborgdb-service:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - CYBORGDB_API_KEY=rare-net-secret-key
+      - CYBORGDB_DB_TYPE=redis
+      - CYBORGDB_CONNECTION_STRING=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
