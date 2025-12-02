@@ -6,3 +6,4 @@ cyborgdb
 faker
 numpy
 requests
+sentence-transformers
