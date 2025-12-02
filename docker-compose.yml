@@ -6,9 +6,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - CYBORGDB_API_KEY=rare-net-secret-key
+      - CYBORGDB_API_KEY=cyborg_d754e642d7b94d05a4750d67a84b0efe
       - CYBORGDB_DB_TYPE=redis
-      - CYBORGDB_CONNECTION_STRING=redis://redis:6379
+      - CYBORGDB_CONNECTION_STRING=host:redis,port:6379,db:0
     depends_on:
       - redis
 

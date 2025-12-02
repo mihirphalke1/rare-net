@@ -5,3 +5,4 @@ python-dotenv
 cyborgdb
 faker
 numpy
+requests

@@ -4,3 +4,5 @@ backend/venv/**
 
 backend/venv
 cursor_prompts.md
+deployment.md
+docker_setup.md
