@@ -3,6 +3,7 @@ services:
   - type: web
     name: rare-net-backend
     env: python
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -14,27 +15,25 @@ services:
           name: rare-net-cyborgdb
           property: url
       - key: CYBORGDB_API_KEY
-        sync: false # You will enter this in the Render Dashboard
+        sync: false
 
   # 2. The CyborgDB Service (Docker)
   - type: web
     name: rare-net-cyborgdb
     env: docker
-    dockerImage: cyborginc/cyborgdb-service:latest
+    dockerfilePath: ./cyborgdb.Dockerfile
     plan: free
     envVars:
       - key: CYBORGDB_API_KEY
-        sync: false # You will enter this in the Render Dashboard
+        sync: false
       - key: CYBORGDB_DB_TYPE
         value: redis
+      # Render Redis service name is resolvable as a hostname
       - key: CYBORGDB_CONNECTION_STRING
-        fromService:
-          type: redis
-          name: rare-net-redis
-          property: connectionString
+        value: host:rare-net-redis,port:6379,db:0
 
   # 3. Redis (Backing Store)
   - type: redis
     name: rare-net-redis
     plan: free
-    ipAllowList: [] # Allow internal connections only
+    ipAllowList: []
