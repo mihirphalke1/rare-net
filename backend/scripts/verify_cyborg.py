@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
 CYBORGDB_URL = os.getenv("CYBORGDB_URL", "http://localhost:8000")
+if not CYBORGDB_URL.startswith("http"):
+    CYBORGDB_URL = f"http://{CYBORGDB_URL}"
 CYBORGDB_API_KEY = os.getenv("CYBORGDB_API_KEY", "rare-net-secret-key")
 
 def verify_connection():

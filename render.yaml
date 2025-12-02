@@ -13,7 +13,7 @@ services:
         fromService:
           type: web
           name: rare-net-cyborgdb
-          property: url
+          property: hostport
       - key: CYBORGDB_API_KEY
         sync: false
 
