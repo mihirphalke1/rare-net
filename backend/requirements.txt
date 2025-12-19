@@ -1,9 +1,21 @@
+# Core Framework
 fastapi
 uvicorn
-pydantic
+pydantic[email]
 python-dotenv
+
+# Database
 cyborgdb
-faker
-numpy
-requests
+
+# ML/Embeddings
 sentence-transformers
+numpy
+
+# Authentication
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# Utilities
+faker
+requests

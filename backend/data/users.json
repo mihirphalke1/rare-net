@@ -1,0 +1,42 @@
+[
+  {
+    "id": "5b7c0aca-488d-4fe5-9e97-508aa917624c",
+    "email": "doctor@mumbai.hospital",
+    "hashed_password": "$2b$12$42jKkNbbp5XaeFVA8sC5L.7EH1ZJxFNBgiDVXQaa06NRK4DXU56Ou",
+    "role": "doctor",
+    "hospital": "mumbai",
+    "full_name": "Dr. Priya Sharma",
+    "is_active": true,
+    "created_at": "2025-12-18T22:28:19.252601"
+  },
+  {
+    "id": "344b5c44-adda-4598-9a74-31d2a9165739",
+    "email": "doctor@boston.hospital",
+    "hashed_password": "$2b$12$bd5kICwOL6gX5kqk2P544ucS1rmS.m65T8EaIs3X9a3Tiwerwz0Ka",
+    "role": "doctor",
+    "hospital": "boston",
+    "full_name": "Dr. James Wilson",
+    "is_active": true,
+    "created_at": "2025-12-18T22:28:19.463925"
+  },
+  {
+    "id": "fb04f2ca-a9f5-4a56-ab8f-dcca5d86d34a",
+    "email": "doctor@london.hospital",
+    "hashed_password": "$2b$12$.fWP3cJEiNRUZJWoBQ6AV..qFzItwZ.JMqXCOADflc1n2yJ4CfBsi",
+    "role": "doctor",
+    "hospital": "london",
+    "full_name": "Dr. Sarah Chen",
+    "is_active": true,
+    "created_at": "2025-12-18T22:28:19.675559"
+  },
+  {
+    "id": "e1b3b45a-c9bb-402e-b0ec-a9d1389d565f",
+    "email": "admin@rarenet.org",
+    "hashed_password": "$2b$12$DWcHy2Erjvp9LZb7.U9m2OH8ZU.euouELTKEK6hLRkucFahph7Vda",
+    "role": "admin",
+    "hospital": null,
+    "full_name": "RareNet Administrator",
+    "is_active": true,
+    "created_at": "2025-12-18T22:28:19.888972"
+  }
+]

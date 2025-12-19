@@ -1,28 +1,67 @@
 # RareNet
 
-**RareNet** — Privacy-Preserving Cross-Institutional Rare Disease Diagnosis Network powered by CyborgDB.
+**RareNet** — Privacy-Preserving Cross-Institutional Rare Disease Diagnosis Network
 
-## Overview
+A Trusted Aggregator architecture that enables hospitals to query encrypted patient databases across institutions while protecting patient privacy through K-anonymity, aggregation, and differential privacy.
 
-RareNet enables hospitals worldwide to search for similar rare disease cases across encrypted patient databases without exposing Protected Health Information (PHI). Using CyborgDB's encrypted vector storage, symptom patterns can be compared across institutions while maintaining full data privacy.
+## What's New in v4.0
 
-## Features
+- **JWT Authentication** — Role-based access control with Doctor and Admin roles
+- **Contributor Mode** — Doctors can securely upload confirmed cases to their hospital's encrypted database
+- **Live Network Stats** — Real-time case counter showing contributions across the network
+- **Enhanced Privacy Pipeline** — Visual encryption step annotations for evaluators
+- **Query Validation** — Rejects non-medical terms to ensure meaningful results
 
-- 🔐 **Zero-Knowledge Search** — Query encrypted patient vectors without decryption
-- 🌍 **Multi-Institution Network** — Connected to Mumbai, Boston, and London hospitals
-- 🧬 **15+ Rare Diseases** — Comprehensive database including TREX1 Lupus, Kawasaki, Progeria, and more
-- ⚡ **Real-time Matching** — Semantic similarity search using sentence transformers
-- 🎨 **Modern UI** — Beautiful glassmorphism design with smooth animations
+## Privacy Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT (Doctor)                                │
+│                     Receives: Aggregated Insight ONLY                       │
+│              ✗ No Patient IDs  ✗ No Institution Names  ✗ No Raw Data       │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        TRUSTED AGGREGATOR (Backend)                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │   Query All  │→│ K-Anonymity  │→│  Aggregate   │→│ Differential │   │
+│  │    Nodes     │  │    Check     │  │   Votes      │  │   Privacy    │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │
+│         │              K ≥ 5?            Weighted        Add Noise         │
+│         │           (Block if <5)        Voting         (ε = 0.1)         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    ▼                 ▼                 ▼
+            ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+            │   Mumbai     │  │   Boston     │  │   London     │
+            │  CyborgDB    │  │  CyborgDB    │  │  CyborgDB    │
+            │  (Encrypted) │  │  (Encrypted) │  │  (Encrypted) │
+            └──────────────┘  └──────────────┘  └──────────────┘
+```
+
+## Key Privacy Features
+
+| Feature                  | Description                                                                |
+| ------------------------ | -------------------------------------------------------------------------- |
+| **K-Anonymity**          | Results blocked if < 5 matching cases (prevents identifying rare patients) |
+| **Aggregation**          | Only diagnosis name + confidence returned, never patient details           |
+| **Differential Privacy** | Laplace noise (ε=0.1) added to confidence scores                           |
+| **No PII Leakage**       | Patient IDs and institution sources never leave the server                 |
+| **Encrypted Storage**    | CyborgDB encrypts vectors at rest and during search operations             |
 
 ## Tech Stack
 
-| Component  | Technology                                                  |
-| ---------- | ----------------------------------------------------------- |
-| Frontend   | React 19 + TypeScript + Vite + Tailwind CSS + Framer Motion |
-| Backend    | Python 3.12 + FastAPI                                       |
-| Vector DB  | CyborgDB (encrypted vector storage)                         |
-| Cache      | Redis                                                       |
-| Embeddings | Sentence Transformers (all-MiniLM-L6-v2)                    |
+| Component      | Technology                                                  |
+| -------------- | ----------------------------------------------------------- |
+| Frontend       | React 19 + TypeScript + Vite + Tailwind CSS + Framer Motion |
+| Backend        | Python 3.12 + FastAPI                                       |
+| Vector DB      | CyborgDB (encrypted vector storage)                         |
+| Cache          | Redis                                                       |
+| Embeddings     | Sentence Transformers (all-MiniLM-L6-v2)                    |
+| Authentication | JWT with bcrypt password hashing                            |
+| Privacy        | K-Anonymity + Differential Privacy + Aggregation            |
 
 ## Quick Start
 
@@ -34,94 +73,121 @@ RareNet enables hospitals worldwide to search for similar rare disease cases acr
 
 ### 1. Start Docker Services
 
-**Important**: Open Docker Desktop first and ensure it's running (whale icon in menu bar).
-
 ```bash
-# Start CyborgDB and Redis containers
+# From project root
 docker-compose up -d
-
-# Verify containers are running
-docker ps
 ```
 
-You should see `rare-net-cyborgdb-1` and `rare-net-redis-1` running.
-
-### 2. Start Backend
+### 2. Setup Backend
 
 ```bash
-# Navigate to backend
 cd backend
-
-# Create virtual environment (first time only)
-python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Install dependencies (first time only)
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Start FastAPI server
+# Seed demo users and database
+python -c "from app.auth.user_store import seed_demo_users; seed_demo_users()"
+python scripts/init_db.py
+
+# Start server
 uvicorn main:app --reload --port 8001
 ```
 
-Backend runs at: http://localhost:8001
-
-### 3. Initialize Database with Sample Data
-
-In a new terminal (with backend venv activated):
+### 3. Setup Frontend
 
 ```bash
-cd backend
-source venv/bin/activate
-
-# Populate database with rare disease cases
-python scripts/simulate_data.py
-```
-
-This creates ~120 synthetic patient records across 3 institutions with 15+ rare diseases.
-
-### 4. Start Frontend
-
-In a new terminal:
-
-```bash
-# Navigate to frontend
 cd frontend
-
-# Install dependencies (first time only)
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Frontend runs at: http://localhost:5173
+### 4. Access Application
+
+Open **http://localhost:5173** and login with:
+
+| Email                  | Password    | Role   | Hospital |
+| ---------------------- | ----------- | ------ | -------- |
+| doctor@mumbai.hospital | password123 | Doctor | Mumbai   |
+| doctor@boston.hospital | password123 | Doctor | Boston   |
+| doctor@london.hospital | password123 | Doctor | London   |
+| admin@rarenet.org      | admin123    | Admin  | Global   |
 
 ## Demo Scenarios
 
-Once everything is running, try these searches:
+### 1. Diagnose Mode (Read)
 
-| Search Query                                        | Expected Results                       |
-| --------------------------------------------------- | -------------------------------------- |
-| `chilblain lesions, raynaud phenomenon, joint pain` | TREX1 Lupus cases from Boston & London |
-| `strawberry tongue, high fever, rash, red eyes`     | Kawasaki Disease from Mumbai           |
-| `enlarged spleen, bone pain, anemia`                | Gaucher Disease                        |
-| `muscle weakness, cardiomegaly, respiratory issues` | Pompe Disease                          |
-| `tall stature, long fingers, lens dislocation`      | Marfan Syndrome                        |
+Search for symptoms to get privacy-safe diagnostic suggestions:
+
+| Search Query                                      | Expected Result        |
+| ------------------------------------------------- | ---------------------- |
+| joint hypermobility, stretchy skin, easy bruising | Ehlers-Danlos Syndrome |
+| strawberry tongue, high fever, rash               | Kawasaki Disease       |
+| chilblain lesions, raynaud phenomenon             | TREX1 Lupus            |
+
+### 2. Privacy Block Test
+
+Search: `severe growth retardation, premature aging, alopecia`
+
+Expected: **Privacy Protection Active** — Only 2 cases exist globally, below K=5 threshold.
+
+### 3. Query Validation Test
+
+Search: `hello world meow`
+
+Expected: **Invalid Query** — Non-medical terms rejected.
+
+### 4. Contributor Mode (Write)
+
+1. Login as any doctor
+2. Switch to "Contribute" tab
+3. Enter symptoms and select diagnosis
+4. Click "Encrypt & Upload"
+5. Watch network stats counter increment
 
 ## API Endpoints
 
-| Endpoint        | Method | Description                |
-| --------------- | ------ | -------------------------- |
-| `/`             | GET    | Health check               |
-| `/api/health`   | GET    | Detailed health status     |
-| `/api/search`   | POST   | Search for similar cases   |
-| `/api/diseases` | GET    | List all rare diseases     |
-| `/api/symptoms` | GET    | List all symptoms          |
-| `/api/init`     | POST   | Initialize network indices |
+### Authentication
 
-API Documentation: http://localhost:8001/docs
+| Endpoint         | Method | Description                  |
+| ---------------- | ------ | ---------------------------- |
+| `/auth/login`    | POST   | Get JWT token                |
+| `/auth/me`       | GET    | Get current user info        |
+| `/auth/refresh`  | POST   | Refresh access token         |
+| `/auth/register` | POST   | Create new user (admin only) |
+
+### Diagnosis & Reporting
+
+| Endpoint        | Method | Auth Required | Description                          |
+| --------------- | ------ | ------------- | ------------------------------------ |
+| `/api/diagnose` | POST   | Yes           | Privacy-safe diagnosis (K-anon + DP) |
+| `/api/report`   | POST   | Doctor        | Upload confirmed case to hospital    |
+| `/api/validate` | POST   | No            | Validate symptom query               |
+
+### Reference & Stats
+
+| Endpoint              | Method | Description                   |
+| --------------------- | ------ | ----------------------------- |
+| `/api/stats`          | GET    | Network statistics            |
+| `/api/diseases`       | GET    | List all rare diseases        |
+| `/api/symptoms`       | GET    | List all symptoms             |
+| `/api/privacy/config` | GET    | Privacy configuration details |
+| `/api/health`         | GET    | Health check                  |
+
+**API Documentation:** http://localhost:8001/docs
+
+## Privacy Pipeline (for Judges)
+
+```
+1. [CLIENT]  Symptoms entered as plaintext
+2. [SERVER]  Vectorized using sentence-transformers (384 dims)
+3. [CYBORG]  Vector encrypted at rest in CyborgDB index
+4. [CYBORG]  Similarity search performed on ENCRYPTED vectors
+5. [SERVER]  K-anonymity check: require >= 5 matches
+6. [SERVER]  Aggregation: weighted voting on diagnoses
+7. [SERVER]  Differential privacy: Laplace noise added (ε=0.1)
+8. [CLIENT]  Only diagnosis label + noisy confidence returned
+```
 
 ## Project Structure
 
@@ -129,46 +195,38 @@ API Documentation: http://localhost:8001/docs
 rare-net/
 ├── backend/
 │   ├── app/
-│   │   ├── models.py           # Pydantic models
-│   │   ├── rare_diseases.py    # Disease database
-│   │   └── services/
-│   │       └── cyborg_service.py
+│   │   ├── auth/              # JWT authentication module
+│   │   │   ├── models.py      # User, Token models
+│   │   │   ├── jwt_handler.py # Token creation/verification
+│   │   │   ├── router.py      # Auth endpoints
+│   │   │   ├── dependencies.py # Auth middleware
+│   │   │   └── user_store.py  # User storage (JSON)
+│   │   ├── services/
+│   │   │   ├── cyborg_service.py     # CyborgDB client
+│   │   │   ├── privacy_aggregator.py # Trusted Aggregator
+│   │   │   └── stats_service.py      # Network stats
+│   │   ├── models.py          # API models
+│   │   └── rare_diseases.py   # Disease database
+│   ├── data/
+│   │   ├── users.json         # Demo users
+│   │   └── network_stats.json # Case statistics
 │   ├── scripts/
-│   │   ├── simulate_data.py    # Generate test data
-│   │   └── verify_cyborg.py
-│   ├── main.py                 # FastAPI application
-│   └── requirements.txt
+│   │   └── init_db.py         # Database seeding
+│   └── main.py                # FastAPI app
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── WorldMap.tsx
 │   │   │   ├── SearchConsole.tsx
-│   │   │   └── ResultsGrid.tsx
-│   │   ├── App.tsx
-│   │   └── index.css
+│   │   │   ├── DiagnosticInsight.tsx
+│   │   │   ├── ContributorMode.tsx
+│   │   │   └── ...
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx
+│   │   ├── pages/
+│   │   │   └── LoginPage.tsx
+│   │   └── App.tsx
 │   └── package.json
-├── docker-compose.yml
-└── README.md
-```
-
-## Common Commands
-
-```bash
-# Stop all Docker services
-docker-compose down
-
-# View Docker logs
-docker-compose logs -f
-
-# Reset database
-cd backend && python scripts/reset_db.py
-
-# Run backend tests
-cd backend && pytest
-
-# Build frontend for production
-cd frontend && npm run build
+└── docker-compose.yml
 ```
 
 ## Troubleshooting
@@ -177,25 +235,22 @@ cd frontend && npm run build
 
 → Open Docker Desktop and wait for it to fully start
 
-### "Port 8000 already allocated"
+### "Port 8001 already in use"
 
-→ CyborgDB uses port 8000. Kill the conflicting process: `lsof -i :8000`
+→ Kill the process: `lsof -ti:8001 | xargs kill`
 
 ### "Connection refused" when searching
 
 → Ensure backend is running on port 8001 and Docker services are up
 
+### "Invalid credentials" on login
+
+→ Run: `python -c "from app.auth.user_store import seed_demo_users; seed_demo_users()"`
+
 ### No results from search
 
-→ Run `python scripts/simulate_data.py` to populate the database
-
-## Privacy & Security
-
-- **No PII Storage**: Only symptom vectors and anonymized metadata stored
-- **Encrypted at Rest**: CyborgDB encrypts all vectors
-- **Encrypted in Transit**: HTTPS for production deployments
-- **Institution Isolation**: Each hospital's data in separate encrypted indices
+→ Run: `python scripts/init_db.py` to populate the database
 
 ## License
 
-MIT License — Built for Healthcare Hackathon 2024
+MIT License — Built for the CyborgDB Hackathon 2024

@@ -370,3 +370,153 @@ def generate_symptom_text(disease_name: str, num_symptoms: int = 4) -> str:
     selected = random.sample(symptoms, min(num_symptoms, len(symptoms)))
     return ", ".join(selected)
 
+
+# Common medical terms that indicate valid symptom input
+VALID_MEDICAL_TERMS = {
+    # General symptoms
+    "pain", "ache", "fever", "fatigue", "weakness", "swelling", "inflammation",
+    "bleeding", "bruising", "rash", "lesion", "ulcer", "numbness", "tingling",
+    "stiffness", "tenderness", "discomfort", "burning", "itching", "cramping",
+    
+    # Body parts
+    "joint", "muscle", "bone", "skin", "eye", "ear", "nose", "throat", "chest",
+    "abdomen", "back", "neck", "head", "face", "hand", "foot", "arm", "leg",
+    "finger", "toe", "heart", "lung", "liver", "kidney", "spleen", "brain",
+    "tongue", "lip", "scalp", "nail", "hair", "teeth", "gum",
+    
+    # Medical descriptors
+    "chronic", "acute", "progressive", "recurrent", "bilateral", "unilateral",
+    "severe", "mild", "moderate", "intermittent", "persistent", "sudden",
+    "gradual", "episodic", "congenital", "hereditary", "genetic",
+    
+    # Specific symptoms from our database
+    "hypermobility", "hypotonia", "hypertension", "hypotension", "tachycardia",
+    "bradycardia", "arrhythmia", "palpitation", "dyspnea", "cough", "wheeze",
+    "stridor", "apnea", "cyanosis", "pallor", "jaundice", "edema", "ascites",
+    "hepatomegaly", "splenomegaly", "lymphadenopathy", "cardiomegaly",
+    "anemia", "thrombocytopenia", "leukopenia", "neutropenia",
+    "seizure", "tremor", "ataxia", "dystonia", "chorea", "spasticity",
+    "paralysis", "paresis", "neuropathy", "myopathy", "encephalopathy",
+    "dementia", "delirium", "confusion", "amnesia", "aphasia", "dysarthria",
+    "dysphagia", "nausea", "vomiting", "diarrhea", "constipation", "bloating",
+    "anorexia", "polyphagia", "polydipsia", "polyuria", "oliguria", "hematuria",
+    "proteinuria", "glycosuria", "dysuria", "incontinence", "retention",
+    "alopecia", "hirsutism", "hyperhidrosis", "hypohidrosis", "pruritus",
+    "urticaria", "eczema", "psoriasis", "dermatitis", "erythema", "petechiae",
+    "purpura", "ecchymosis", "telangiectasia", "angiokeratoma",
+    "photosensitivity", "raynaud", "chilblain", "acrocyanosis",
+    "arthralgia", "arthritis", "myalgia", "fibromyalgia", "osteoporosis",
+    "fracture", "dislocation", "contracture", "scoliosis", "kyphosis",
+    "lordosis", "deformity", "malformation", "anomaly", "dysplasia",
+    "hypoplasia", "hyperplasia", "atrophy", "hypertrophy",
+    "retardation", "delay", "regression", "deterioration", "decline",
+    "failure", "insufficiency", "deficiency", "excess", "accumulation",
+    
+    # Common symptom phrases
+    "strawberry", "high", "low", "loss", "gain", "difficulty", "trouble",
+    "problem", "issue", "disorder", "syndrome", "disease", "condition",
+    "enlarged", "small", "large", "short", "tall", "thin", "thick",
+    "red", "blue", "yellow", "white", "dark", "light", "pale",
+    "hot", "cold", "warm", "cool", "dry", "wet", "moist",
+    "hard", "soft", "firm", "tender", "sensitive", "numb",
+    "vision", "hearing", "smell", "taste", "touch", "balance",
+    "sleep", "appetite", "weight", "growth", "development",
+    "breathing", "swallowing", "walking", "talking", "eating",
+    "movement", "coordination", "reflex", "sensation", "perception"
+}
+
+def validate_symptoms(query: str) -> dict:
+    """
+    Validate if the query contains valid medical/symptom terms.
+    
+    Returns:
+        dict with:
+        - is_valid: bool
+        - valid_terms: list of recognized medical terms
+        - invalid_terms: list of unrecognized terms
+        - confidence: float (0-1) representing how medical the query is
+        - message: str explanation
+    """
+    # Split query into individual terms
+    query_lower = query.lower()
+    
+    # Remove common separators and get individual words
+    for sep in [',', ';', '.', '/', '\\', '|', '-', '_']:
+        query_lower = query_lower.replace(sep, ' ')
+    
+    words = [w.strip() for w in query_lower.split() if len(w.strip()) > 2]
+    
+    if not words:
+        return {
+            "is_valid": False,
+            "valid_terms": [],
+            "invalid_terms": [],
+            "confidence": 0.0,
+            "message": "Please enter valid symptoms (e.g., joint pain, fever, rash)"
+        }
+    
+    # Get all known symptoms from our database
+    all_symptoms = get_all_symptoms()
+    all_symptoms_lower = [s.lower() for s in all_symptoms]
+    
+    valid_terms = []
+    invalid_terms = []
+    
+    # Check each word/phrase
+    for word in words:
+        is_valid = False
+        
+        # Check if it's a known medical term
+        if word in VALID_MEDICAL_TERMS:
+            is_valid = True
+        
+        # Check if it's part of any known symptom
+        if not is_valid:
+            for symptom in all_symptoms_lower:
+                if word in symptom or symptom in word:
+                    is_valid = True
+                    break
+        
+        # Check if it matches any key medical pattern
+        if not is_valid:
+            # Check for medical suffixes
+            medical_suffixes = ['itis', 'osis', 'emia', 'pathy', 'algia', 'ectomy', 
+                              'plasty', 'scopy', 'gram', 'graphy', 'megaly', 'penia',
+                              'philia', 'phobia', 'plegia', 'rrhea', 'trophy']
+            for suffix in medical_suffixes:
+                if word.endswith(suffix):
+                    is_valid = True
+                    break
+        
+        if is_valid:
+            valid_terms.append(word)
+        else:
+            invalid_terms.append(word)
+    
+    # Calculate confidence based on ratio of valid terms
+    total_terms = len(valid_terms) + len(invalid_terms)
+    confidence = len(valid_terms) / total_terms if total_terms > 0 else 0.0
+    
+    # Determine if query is valid (at least 50% medical terms and at least 1 valid term)
+    is_valid = confidence >= 0.5 and len(valid_terms) >= 1
+    
+    # Generate appropriate message
+    if is_valid:
+        if invalid_terms:
+            message = f"Query accepted. Unrecognized terms ignored: {', '.join(invalid_terms[:3])}"
+        else:
+            message = "Valid medical query"
+    else:
+        if invalid_terms:
+            message = f"Invalid query: '{', '.join(invalid_terms[:3])}' are not recognized medical terms. Please enter valid symptoms."
+        else:
+            message = "Please enter valid medical symptoms (e.g., joint pain, fever, skin rash)"
+    
+    return {
+        "is_valid": is_valid,
+        "valid_terms": valid_terms,
+        "invalid_terms": invalid_terms,
+        "confidence": round(confidence, 2),
+        "message": message
+    }
+

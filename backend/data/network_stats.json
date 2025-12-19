@@ -1,0 +1,28 @@
+{
+  "total_cases": 315,
+  "cases_by_hospital": {
+    "mumbai": 45,
+    "tokyo": 45,
+    "singapore": 31,
+    "boston": 57,
+    "toronto": 40,
+    "sao_paulo": 30,
+    "london": 39,
+    "berlin": 28
+  },
+  "cases_by_disease": {
+    "Ehlers-Danlos Syndrome (Vascular Type)": 80,
+    "Kawasaki Disease": 70,
+    "TREX1 Lupus (Aicardi-Gouti\u00e8res Syndrome)": 40,
+    "Pompe Disease": 30,
+    "Gaucher Disease": 30,
+    "Marfan Syndrome": 25,
+    "Wilson's Disease": 20,
+    "Fabry Disease": 15,
+    "Progeria (Hutchinson-Gilford Syndrome)": 2,
+    "Fibrodysplasia Ossificans Progressiva (FOP)": 3
+  },
+  "contributions_today": 0,
+  "last_contribution": null,
+  "last_updated": "2025-12-19T02:12:16.055250"
+}

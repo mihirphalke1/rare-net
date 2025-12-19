@@ -107,6 +107,39 @@ class CyborgService:
             logger.error(f"Failed to store patient {patient.id}: {e}")
             raise e
 
+    def search_institution(self, institution: str, query_vector: List[float], top_k: int = 20) -> List[Dict[str, Any]]:
+        """
+        Search a single institution's CyborgDB index.
+        
+        Used by the Privacy Aggregator to query each hospital separately.
+        """
+        self._ensure_connection()
+        results = []
+        index_name = f"rarenet_{institution}"
+        
+        try:
+            index = self.client.load_index(index_name, index_key=self.demo_key)
+            raw_results = index.query(query_vector, top_k=top_k)
+            
+            if raw_results:
+                for match in raw_results:
+                    if isinstance(match, dict):
+                        match_data = match.copy()
+                    else:
+                        match_data = {
+                            'id': getattr(match, 'id', ''),
+                            'score': getattr(match, 'score', 0),
+                            'metadata': getattr(match, 'metadata', {})
+                        }
+                    results.append(match_data)
+                    
+            logger.info(f"Search {index_name}: found {len(results)} results")
+            
+        except Exception as e:
+            logger.warning(f"Search failed for {index_name}: {e}")
+        
+        return results
+
     def search_network(self, query_vector: List[float], top_k: int = 6) -> List[Dict[str, Any]]:
         """Searches across all known institution indices."""
         self._ensure_connection()

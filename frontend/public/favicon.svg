@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0284c7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="white"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#grad)" stroke-width="2"/>
+  
+  <!-- Brain/Network icon -->
+  <g fill="none" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <!-- Central node -->
+    <circle cx="50" cy="50" r="7" fill="url(#grad)" stroke="none"/>
+    
+    <!-- Outer nodes -->
+    <circle cx="50" cy="27" r="4.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="73" cy="50" r="4.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="50" cy="73" r="4.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="27" cy="50" r="4.5" fill="url(#grad)" stroke="none"/>
+    
+    <!-- Corner nodes -->
+    <circle cx="33" cy="33" r="3.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="67" cy="33" r="3.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="67" cy="67" r="3.5" fill="url(#grad)" stroke="none"/>
+    <circle cx="33" cy="67" r="3.5" fill="url(#grad)" stroke="none"/>
+    
+    <!-- Connection lines -->
+    <line x1="50" y1="43" x2="50" y2="32" opacity="0.7"/>
+    <line x1="57" y1="50" x2="68" y2="50" opacity="0.7"/>
+    <line x1="50" y1="57" x2="50" y2="68" opacity="0.7"/>
+    <line x1="43" y1="50" x2="32" y2="50" opacity="0.7"/>
+    
+    <line x1="45" y1="45" x2="37" y2="37" opacity="0.5"/>
+    <line x1="55" y1="45" x2="63" y2="37" opacity="0.5"/>
+    <line x1="55" y1="55" x2="63" y2="63" opacity="0.5"/>
+    <line x1="45" y1="55" x2="37" y2="63" opacity="0.5"/>
+  </g>
+  
+  <!-- Shield overlay -->
+  <path d="M50 20 L68 29 L68 47 Q68 62 50 76 Q32 62 32 47 L32 29 Z" 
+        fill="none" 
+        stroke="url(#grad)" 
+        stroke-width="1.5" 
+        opacity="0.3"/>
+</svg>
