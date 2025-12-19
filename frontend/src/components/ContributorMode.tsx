@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, getAuthHeader } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import {
   Upload,
   Shield,
@@ -12,15 +13,19 @@ import {
   Stethoscope,
   FileText,
   Lock,
-  TrendingUp
+  TrendingUp,
+  Radio,
+  ChevronRight
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 interface NetworkStats {
   total_cases: number;
+  hospital_count: number;
+  your_hospital: string | null;
+  your_hospital_cases: number;
   cases_by_hospital: Record<string, number>;
-  cases_by_disease: Record<string, number>;
   contributions_today: number;
 }
 
@@ -49,30 +54,43 @@ export function ContributorMode() {
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [stats, setStats] = useState<NetworkStats | null>(null);
 
-  // Load diseases and stats
+  // Load diseases once
   useEffect(() => {
-    const loadData = async () => {
+    const loadDiseases = async () => {
       try {
-        const [diseasesRes, statsRes] = await Promise.all([
-          fetch(`${API_URL}/api/diseases`),
-          fetch(`${API_URL}/api/stats`, { headers: getAuthHeader(token) })
-        ]);
-        
-        if (diseasesRes.ok) {
-          const data = await diseasesRes.json();
+        const res = await fetch(`${API_URL}/api/diseases`);
+        if (res.ok) {
+          const data = await res.json();
           setDiseases(data.diseases);
         }
-        
-        if (statsRes.ok) {
-          const data = await statsRes.json();
+      } catch (err) {
+        console.error('Failed to load diseases:', err);
+      }
+    };
+    loadDiseases();
+  }, []);
+
+  // Real-time stats polling (every 5 seconds)
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/stats`, { headers: getAuthHeader(token) });
+        if (res.ok) {
+          const data = await res.json();
           setStats(data);
         }
       } catch (err) {
-        console.error('Failed to load data:', err);
+        console.error('Failed to load stats:', err);
       }
     };
     
-    loadData();
+    // Initial fetch
+    fetchStats();
+    
+    // Poll every 5 seconds for real-time updates
+    const interval = setInterval(fetchStats, 5000);
+    
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,7 +204,7 @@ export function ContributorMode() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               <div className="flex items-center gap-2">
                 <Stethoscope className="w-4 h-4 text-slate-400" />
-                <span>Confirmed Diagnosis</span>
+                <span>Diagnosis</span>
               </div>
             </label>
             <select
@@ -196,12 +214,23 @@ export function ContributorMode() {
               required
             >
               <option value="">Select a diagnosis...</option>
-              {diseases.map((d) => (
-                <option key={d.name} value={d.name}>
-                  {d.name} ({d.icd10})
-                </option>
-              ))}
+              <option value="Unknown" className="text-amber-600 font-medium">
+                Unknown / Not Yet Diagnosed
+              </option>
+              <optgroup label="Confirmed Diagnoses">
+                {diseases.map((d) => (
+                  <option key={d.name} value={d.name}>
+                    {d.name} ({d.icd10})
+                  </option>
+                ))}
+              </optgroup>
             </select>
+            {diagnosis === 'Unknown' && (
+              <p className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                This case will be added to the network for symptom matching. 
+                If a diagnosis is later confirmed, you can submit a new case with the confirmed diagnosis.
+              </p>
+            )}
           </div>
 
           {/* Demographics Row */}
@@ -328,44 +357,88 @@ export function ContributorMode() {
           animate={{ opacity: 1, x: 0 }}
           className="glass-card rounded-2xl p-6"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Database className="w-5 h-5 text-sky-600" />
-            <h3 className="font-semibold text-slate-800">Network Statistics</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Database className="w-5 h-5 text-sky-600" />
+              <h3 className="font-semibold text-slate-800">Network Statistics</h3>
+            </div>
+            {/* Real-time indicator */}
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+              <Radio className="w-3 h-3 animate-pulse" />
+              <span>Live</span>
+            </div>
           </div>
 
           {stats ? (
             <div className="space-y-4">
               {/* Total Cases */}
               <div className="text-center p-4 rounded-xl bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-200">
-                <div className="text-3xl font-bold text-sky-600">{stats.total_cases}</div>
+                <motion.div 
+                  key={stats.total_cases}
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: 1 }}
+                  className="text-3xl font-bold text-sky-600"
+                >
+                  {stats.total_cases}
+                </motion.div>
                 <div className="text-sm text-slate-500">Total Cases in Network</div>
               </div>
 
-              {/* By Hospital */}
-              <div>
-                <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Cases by Hospital</p>
-                {Object.entries(stats.cases_by_hospital).map(([hospital, count]) => (
-                  <div key={hospital} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+              {/* Your Hospital */}
+              {user?.hospital && (
+                <div>
+                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Your Hospital</p>
+                  <Link 
+                    to={`/hospital/${user.hospital}`}
+                    className="flex justify-between items-center p-3 rounded-xl bg-sky-50 border border-sky-200 hover:border-sky-300 transition-colors"
+                  >
                     <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm text-slate-600 capitalize">{hospital}</span>
-                      {hospital === user?.hospital && (
-                        <span className="text-xs bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded">You</span>
-                      )}
+                      <Building2 className="w-5 h-5 text-sky-600" />
+                      <span className="text-sm font-medium text-slate-700 capitalize">{user.hospital.replace('_', ' ')}</span>
                     </div>
-                    <span className="text-sm font-semibold text-slate-800">{count}</span>
-                  </div>
-                ))}
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-sky-600">
+                        {stats.your_hospital_cases || 0}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-sky-400" />
+                    </div>
+                  </Link>
+                  <p className="text-xs text-slate-400 mt-2">
+                    You can only view cases from your own hospital.
+                  </p>
+                </div>
+              )}
+
+              {/* Network Total (aggregated only) */}
+              <div className="pt-3 border-t border-slate-100">
+                <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Network Total</p>
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Shield className="w-4 h-4 text-emerald-500" />
+                  <span>{stats.hospital_count || 8} hospitals connected</span>
+                </div>
               </div>
 
-              {/* Today's Contributions */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+              {/* Today's Contributions - Real-time animated */}
+              <motion.div 
+                key={stats.contributions_today}
+                initial={{ scale: 1.02, backgroundColor: 'rgb(209 250 229)' }}
+                animate={{ scale: 1, backgroundColor: 'rgb(236 253 245)' }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-between p-3 rounded-lg border border-emerald-200"
+              >
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                   <span className="text-sm text-emerald-700">Today's Contributions</span>
                 </div>
-                <span className="text-lg font-bold text-emerald-600">{stats.contributions_today}</span>
-              </div>
+                <motion.span 
+                  key={stats.contributions_today}
+                  initial={{ scale: 1.2 }}
+                  animate={{ scale: 1 }}
+                  className="text-lg font-bold text-emerald-600"
+                >
+                  {stats.contributions_today}
+                </motion.span>
+              </motion.div>
             </div>
           ) : (
             <div className="flex items-center justify-center py-8 text-slate-400">

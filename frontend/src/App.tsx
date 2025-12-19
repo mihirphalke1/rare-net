@@ -5,10 +5,13 @@ import { AuthProvider, useAuth, getAuthHeader } from './context/AuthContext';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
+import { HospitalCasesPage } from './pages/HospitalCasesPage';
+// HospitalsPage removed - users can only view their own hospital
 import { SearchConsole } from './components/SearchConsole';
 import { DiagnosticInsight } from './components/DiagnosticInsight';
 import { NetworkStatus } from './components/NetworkStatus';
 import { ContributorMode } from './components/ContributorMode';
+import { MyCases } from './components/MyCases';
 import { 
   Shield,
   Search,
@@ -16,7 +19,10 @@ import {
   LogOut,
   User,
   Building2,
-  Loader2
+  Loader2,
+  Database,
+  Activity,
+  Zap
 } from 'lucide-react';
 import { Logo } from './components/Logo';
 
@@ -53,7 +59,7 @@ interface DiagnoseResponse {
   search_time_ms: number;
 }
 
-type TabType = 'diagnose' | 'contribute';
+type TabType = 'diagnose' | 'contribute' | 'my-cases';
 
 // Header Component
 function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveTab: (tab: TabType) => void }) {
@@ -107,6 +113,17 @@ function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveT
               <span>Search</span>
             </button>
             <button
+              onClick={() => setActiveTab('my-cases')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                activeTab === 'my-cases'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Database className="w-4 h-4" />
+              <span>My Cases</span>
+            </button>
+            <button
               onClick={() => setActiveTab('contribute')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 activeTab === 'contribute'
@@ -154,7 +171,7 @@ function MobileTabBar({ activeTab, setActiveTab }: { activeTab: TabType; setActi
       <div className="flex items-center bg-slate-100 rounded-full p-1">
         <button
           onClick={() => setActiveTab('diagnose')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
             activeTab === 'diagnose'
               ? 'bg-white text-sky-600 shadow-sm'
               : 'text-slate-500'
@@ -164,21 +181,42 @@ function MobileTabBar({ activeTab, setActiveTab }: { activeTab: TabType; setActi
           <span>Search</span>
         </button>
         <button
+          onClick={() => setActiveTab('my-cases')}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
+            activeTab === 'my-cases'
+              ? 'bg-white text-sky-600 shadow-sm'
+              : 'text-slate-500'
+          }`}
+        >
+          <Database className="w-4 h-4" />
+          <span>Cases</span>
+        </button>
+        <button
           onClick={() => setActiveTab('contribute')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
             activeTab === 'contribute'
               ? 'bg-white text-sky-600 shadow-sm'
               : 'text-slate-500'
           }`}
         >
           <Upload className="w-4 h-4" />
-          <span>Contribute</span>
+          <span>Add</span>
         </button>
       </div>
     </div>
   );
 }
 
+
+// Network Stats Type
+interface NetworkStats {
+  total_cases: number;
+  hospital_count: number;
+  your_hospital: string | null;
+  your_hospital_cases: number;
+  diseases_tracked: number;
+  symptoms_indexed: number;
+}
 
 // Search Page Content
 function SearchPage() {
@@ -189,6 +227,25 @@ function SearchPage() {
   const [searchTime, setSearchTime] = useState<number>(0);
   const [searchStep, setSearchStep] = useState<string>('');
   const [currentQuery, setCurrentQuery] = useState<string>('');
+  const [networkStats, setNetworkStats] = useState<NetworkStats | null>(null);
+
+  // Fetch network stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/stats`, {
+          headers: getAuthHeader(token)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setNetworkStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      }
+    };
+    fetchStats();
+  }, [token]);
 
   const handleSearch = async (query: string) => {
     setIsSearching(true);
@@ -241,6 +298,13 @@ function SearchPage() {
     }
   };
 
+  // Example queries for quick search
+  const exampleQueries = [
+    { label: 'Ehlers-Danlos', query: 'joint hypermobility, easy bruising, stretchy skin' },
+    { label: 'Kawasaki', query: 'high fever, strawberry tongue, rash, conjunctivitis' },
+    { label: 'Pompe', query: 'muscle weakness, cardiomegaly, respiratory difficulty' },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Search Section */}
@@ -281,10 +345,11 @@ function SearchPage() {
         </AnimatePresence>
       </motion.section>
 
-      {/* Results */}
-      <AnimatePresence>
-        {(insight || isSearching) && (
+      {/* Results OR Default Content */}
+      <AnimatePresence mode="wait">
+        {(insight || isSearching) ? (
           <motion.section
+            key="results"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -339,6 +404,122 @@ function SearchPage() {
               </motion.div>
             )}
           </motion.section>
+        ) : (
+          <motion.section
+            key="default"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            {/* Quick Search Examples */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-5 h-5 text-amber-500" />
+                <h3 className="font-semibold text-slate-900">Quick Search Examples</h3>
+              </div>
+              <p className="text-sm text-slate-500 mb-4">
+                Click any example below to try a pre-configured search:
+              </p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                {exampleQueries.map((example) => (
+                  <button
+                    key={example.label}
+                    onClick={() => handleSearch(example.query)}
+                    className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-all text-left group"
+                  >
+                    <div className="font-medium text-slate-900 group-hover:text-sky-700 mb-1">
+                      {example.label}
+                    </div>
+                    <div className="text-xs text-slate-500 line-clamp-2">
+                      {example.query}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Network Stats Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white"
+              >
+                <Database className="w-6 h-6 mb-2 opacity-80" />
+                <div className="text-3xl font-bold">{networkStats?.total_cases || '-'}</div>
+                <div className="text-sm opacity-80">Total Network Cases</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"
+              >
+                <Building2 className="w-6 h-6 mb-2 text-slate-400" />
+                <div className="text-3xl font-bold text-slate-900">
+                  {networkStats?.hospital_count || '-'}
+                </div>
+                <div className="text-sm text-slate-500">Connected Hospitals</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"
+              >
+                <Activity className="w-6 h-6 mb-2 text-slate-400" />
+                <div className="text-3xl font-bold text-slate-900">{networkStats?.diseases_tracked || '-'}</div>
+                <div className="text-sm text-slate-500">Diseases Tracked</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"
+              >
+                <Shield className="w-6 h-6 mb-2 text-emerald-500" />
+                <div className="text-3xl font-bold text-emerald-600">100%</div>
+                <div className="text-sm text-slate-500">Privacy Protected</div>
+              </motion.div>
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-semibold text-slate-900">Privacy-Preserving Network</h3>
+              </div>
+              
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  RareNet queries <strong>{networkStats?.hospital_count || 8} hospital nodes</strong> globally, 
+                  but you will only receive:
+                </p>
+                <ul className="space-y-2 ml-4">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                    <span>Aggregated diagnosis suggestions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                    <span>Confidence scores (with privacy noise)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                    <span>Recommended tests and specialists</span>
+                  </li>
+                </ul>
+                <p className="text-slate-400 text-xs mt-3">
+                  You will never see which hospital has matching cases or individual patient data.
+                </p>
+              </div>
+            </div>
+          </motion.section>
         )}
       </AnimatePresence>
     </div>
@@ -355,7 +536,7 @@ function MainLayout() {
       
       <main className="max-w-6xl mx-auto px-6 py-8">
         <AnimatePresence mode="wait">
-          {activeTab === 'diagnose' ? (
+          {activeTab === 'diagnose' && (
             <motion.div
               key="diagnose"
               initial={{ opacity: 0, x: -20 }}
@@ -364,7 +545,18 @@ function MainLayout() {
             >
               <SearchPage />
             </motion.div>
-          ) : (
+          )}
+          {activeTab === 'my-cases' && (
+            <motion.div
+              key="my-cases"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <MyCases />
+            </motion.div>
+          )}
+          {activeTab === 'contribute' && (
             <motion.div
               key="contribute"
               initial={{ opacity: 0, x: 20 }}
@@ -424,6 +616,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MainLayout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-cases"
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/hospital/:hospitalId"
+        element={
+          <ProtectedRoute>
+            <HospitalCasesPage />
           </ProtectedRoute>
         }
       />

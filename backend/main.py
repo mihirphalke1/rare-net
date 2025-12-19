@@ -259,19 +259,23 @@ def report_case(
     5. Increment global stats counter
     6. Return success confirmation (no patient data echoed)
     """
-    # Step 1: Validate diagnosis exists
+    # Step 1: Validate diagnosis exists (or is explicitly "Unknown")
     valid_diseases = list(RARE_DISEASES.keys())
     matched_disease = None
     
-    for disease in valid_diseases:
-        if case.diagnosis.lower() in disease.lower() or disease.lower() in case.diagnosis.lower():
-            matched_disease = disease
-            break
+    # Allow "Unknown" as a valid diagnosis for undiagnosed cases
+    if case.diagnosis.lower() == "unknown":
+        matched_disease = "Unknown"
+    else:
+        for disease in valid_diseases:
+            if case.diagnosis.lower() in disease.lower() or disease.lower() in case.diagnosis.lower():
+                matched_disease = disease
+                break
     
     if not matched_disease:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown diagnosis: '{case.diagnosis}'. Must match a known rare disease."
+            detail=f"Unknown diagnosis: '{case.diagnosis}'. Must match a known rare disease or select 'Unknown'."
         )
     
     # Step 2: Validate symptoms contain medical terms
@@ -345,20 +349,36 @@ def get_network_stats(
     Get network statistics.
     
     **Requires Authentication**
+    **Privacy Enforced**: Only shows your hospital's case count, not others.
     
     Returns:
-    - Total cases across network
-    - Cases by hospital (aggregated, not individual records)
-    - Cases by disease type
+    - Total cases across network (aggregated)
+    - Your hospital's case count only
+    - Number of hospitals (not individual counts)
     - Privacy configuration
     """
     stats = stats_service.get_stats()
+    all_hospital_cases = stats.get("cases_by_hospital", {})
+    
+    # Privacy: Only show user's own hospital case count
+    # For other hospitals, just show that they exist (count hidden)
+    if current_user:
+        user_hospital = current_user.hospital
+        user_hospital_cases = all_hospital_cases.get(user_hospital, 0)
+        
+        # Build privacy-safe hospital view
+        # User sees their count, others just see "connected"
+        safe_hospital_view = {user_hospital: user_hospital_cases} if user_hospital else {}
+    else:
+        safe_hospital_view = {}
+        user_hospital_cases = 0
     
     return {
-        "institutions": ["mumbai", "boston", "london"],
         "total_cases": stats.get("total_cases", 0),
-        "cases_by_hospital": stats.get("cases_by_hospital", {}),
-        "cases_by_disease": stats.get("cases_by_disease", {}),
+        "hospital_count": len(all_hospital_cases),
+        "cases_by_hospital": safe_hospital_view,
+        "your_hospital": current_user.hospital if current_user else None,
+        "your_hospital_cases": user_hospital_cases,
         "contributions_today": stats.get("contributions_today", 0),
         "last_contribution": stats.get("last_contribution"),
         "diseases_tracked": len(RARE_DISEASES),
@@ -366,7 +386,8 @@ def get_network_stats(
         "privacy_config": {
             "k_anonymity_threshold": privacy_aggregator.PRIVACY_THRESHOLD,
             "differential_privacy_epsilon": privacy_aggregator.EPSILON
-        }
+        },
+        "privacy_note": "Individual hospital case counts are hidden. Only aggregated network totals are shown."
     }
 
 
@@ -464,6 +485,67 @@ def suggest_symptoms(query: str = ""):
     query_lower = query.lower()
     suggestions = [s for s in all_symptoms if query_lower in s.lower()]
     return {"suggestions": suggestions[:10]}
+
+
+# ============================================
+# Hospital Cases Endpoint
+# ============================================
+
+@app.get("/api/hospital/{hospital_id}/cases")
+def get_hospital_cases(
+    hospital_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get anonymized case list for a specific hospital.
+    
+    **Requires Authentication**
+    **Privacy Enforced**: Users can ONLY view their own hospital's cases.
+    
+    Returns aggregated case information (no patient identifiers):
+    - Total cases
+    - Cases by disease
+    
+    Cross-institution queries are blocked to preserve privacy.
+    """
+    valid_hospitals = ["mumbai", "boston", "london", "tokyo", "singapore", "toronto", "sao_paulo", "berlin"]
+    if hospital_id not in valid_hospitals:
+        raise HTTPException(status_code=404, detail=f"Hospital '{hospital_id}' not found")
+    
+    # PRIVACY ENFORCEMENT: Only allow viewing own hospital
+    is_own_hospital = current_user.hospital == hospital_id
+    is_admin = current_user.role == "admin"
+    
+    if not is_own_hospital and not is_admin:
+        raise HTTPException(
+            status_code=403, 
+            detail="Access denied. You can only view your own hospital's cases. Cross-institution browsing is blocked to preserve patient privacy."
+        )
+    
+    # Get stats for this hospital
+    stats = stats_service.get_stats()
+    hospital_cases = stats.get("cases_by_hospital", {}).get(hospital_id, 0)
+    
+    # Get disease distribution for this hospital
+    # For now, we estimate based on overall distribution
+    cases_by_disease = stats.get("cases_by_disease", {})
+    total_network = stats.get("total_cases", 1)
+    
+    # Estimate disease distribution for this hospital (proportional)
+    hospital_disease_dist = {}
+    for disease, count in cases_by_disease.items():
+        estimated = int((count / total_network) * hospital_cases) if total_network > 0 else 0
+        if estimated > 0:
+            hospital_disease_dist[disease] = estimated
+    
+    return {
+        "hospital_id": hospital_id,
+        "hospital_name": hospital_id.replace("_", " ").title() + " Hospital",
+        "total_cases": hospital_cases,
+        "cases_by_disease": hospital_disease_dist,
+        "is_own_hospital": True,
+        "privacy_note": "Individual patient records are never exposed. Only aggregated statistics are shown."
+    }
 
 
 # ============================================

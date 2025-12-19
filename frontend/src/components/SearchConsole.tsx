@@ -334,7 +334,7 @@ export const SearchConsole = ({ onSearch, isSearching }: SearchConsoleProps) => 
       {/* Helper text */}
       {!validation && (
         <p className="mt-4 text-center text-sm text-slate-400">
-          Enter comma-separated symptoms • Searches across <span className="text-sky-600 font-medium">3 encrypted hospital databases</span>
+          Enter comma-separated symptoms • Searches across <span className="text-sky-600 font-medium">8 encrypted hospital databases</span>
         </p>
       )}
     </div>
