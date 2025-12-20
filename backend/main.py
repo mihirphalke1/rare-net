@@ -69,7 +69,9 @@ def get_embedding_model():
     """Lazy-load the embedding model to avoid ASGI body stream conflicts."""
     global model
     if model is None:
+        print("🧠 get_embedding_model() called - Loading embedding model...")
         model = SentenceTransformer('all-MiniLM-L6-v2')
+        print("✅ Embedding model loaded successfully")
     return model
 
 
@@ -212,7 +214,8 @@ def diagnose(
         # [ENCRYPTION NOTE FOR JUDGES]: Symptoms are converted to 384-dimensional vectors
         # using sentence-transformers. This vector will be used to search encrypted
         # CyborgDB indexes without exposing the raw symptom text to the database.
-        query_vector = model.encode(request.symptoms).tolist()
+        embedding_model = get_embedding_model()
+        query_vector = embedding_model.encode(request.symptoms).tolist()
         
         # Step 2: Run through privacy aggregator pipeline
         # [ENCRYPTION NOTE]: The aggregator queries all 3 hospital CyborgDB nodes.
@@ -306,7 +309,8 @@ def report_case(
     # Step 4: Vectorize symptoms
     # [ENCRYPTION NOTE FOR JUDGES]: Symptoms are converted to semantic vectors.
     # This vector will be stored encrypted in CyborgDB.
-    symptom_vector = model.encode(case.symptoms).tolist()
+    embedding_model = get_embedding_model()
+    symptom_vector = embedding_model.encode(case.symptoms).tolist()
     
     # Step 5: Create patient record
     patient = Patient(
@@ -443,7 +447,8 @@ def add_patient(
     **Admin Only** - Use /api/report for normal case reporting.
     """
     try:
-        vector = model.encode(patient.symptoms).tolist()
+        embedding_model = get_embedding_model()
+        vector = embedding_model.encode(patient.symptoms).tolist()
         cyborg_service.store_patient(patient, vector)
         return {"message": f"Patient {patient.id} stored securely in {patient.institution_id}"}
     except Exception as e:
