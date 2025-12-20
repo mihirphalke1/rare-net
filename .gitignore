@@ -1,6 +1,7 @@
 backend/venv
 backend/venv/*
 backend/venv/**
+backend/.env
 
 backend/venv
 deployment.md

@@ -4,7 +4,7 @@ Authentication Router for RareNet
 Provides REST API endpoints for user authentication and management.
 """
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from .models import (
@@ -40,7 +40,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 # Public Endpoints
 # ============================================
 
-@router.post("/login", response_model=Token)
+@router.post("/login", status_code=200)
 async def login(login_data: UserLogin):
     """
     Authenticate user and return JWT tokens.
@@ -50,58 +50,76 @@ async def login(login_data: UserLogin):
     
     Returns access token (24h) and refresh token (7 days).
     """
-    # Find user
-    user = get_user_by_email(login_data.email)
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Verify password
-    if not verify_password(login_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Check if user is active
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled"
-        )
-    
-    # Create tokens
-    token_data = {
-        "sub": user.id,
-        "email": user.email,
-        "role": user.role,
-        "hospital": user.hospital
-    }
-    
-    access_token = create_access_token(token_data)
-    refresh_token = create_refresh_token(token_data)
-    
-    # Return response
-    return Token(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer",
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user=User(
+    try:
+        # Find user
+        user = get_user_by_email(login_data.email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Verify password
+        if not verify_password(login_data.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Check if user is active
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is disabled"
+            )
+        
+        # Create tokens
+        token_data = {
+            "sub": user.id,
+            "email": user.email,
+            "role": user.role,
+            "hospital": user.hospital
+        }
+        
+        access_token = create_access_token(token_data)
+        refresh_token = create_refresh_token(token_data)
+        
+        # Return response - convert UserInDB to User with proper datetime handling
+        # Handle created_at conversion manually for JSON compatibility
+        created_at_str = None
+        if user.created_at:
+            if isinstance(user.created_at, datetime):
+                created_at_str = user.created_at.isoformat()
+            else:
+                created_at_str = str(user.created_at)
+        
+        user_response = User(
             id=user.id,
             email=user.email,
             role=user.role,
             hospital=user.hospital,
             full_name=user.full_name,
             is_active=user.is_active,
-            created_at=user.created_at
+            created_at=created_at_str
         )
-    )
+        
+        return Token(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            user=user_response
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"LOGIN ERROR: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/refresh", response_model=Token)
@@ -144,20 +162,15 @@ async def refresh_token(refresh_request: RefreshTokenRequest):
     access_token = create_access_token(token_data)
     new_refresh_token = create_refresh_token(token_data)
     
+    # Convert UserInDB to User with proper datetime handling
+    user_response = User.from_user_in_db(user)
+    
     return Token(
         access_token=access_token,
         refresh_token=new_refresh_token,
         token_type="bearer",
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user=User(
-            id=user.id,
-            email=user.email,
-            role=user.role,
-            hospital=user.hospital,
-            full_name=user.full_name,
-            is_active=user.is_active,
-            created_at=user.created_at
-        )
+        user=user_response
     )
 
 
