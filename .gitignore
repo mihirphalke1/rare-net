@@ -30,9 +30,11 @@ Thumbs.db
 *.log
 backend/backend_log.txt
 
-# Test files
+# Test files (but keep production test scripts)
 test-*.html
 test_*.py
+!backend/scripts/test_edge_cases.py
+!backend/scripts/test_kanonymity_edge_cases.py
 debug_*.py
 *_output.txt
 

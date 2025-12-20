@@ -1,0 +1,16 @@
+{
+  "total_tests": 9,
+  "passed": 8,
+  "vulnerabilities": [
+    {
+      "test": "exactly_at_threshold",
+      "severity": "MEDIUM",
+      "issue": "Deterministic behavior at k=k_min"
+    },
+    {
+      "test": "temporal_privacy",
+      "severity": "MEDIUM",
+      "issue": "Confidence changes reveal temporal patterns"
+    }
+  ]
+}
