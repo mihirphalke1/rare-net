@@ -1,8 +1,42 @@
-backend/venv
-backend/venv/*
-backend/venv/**
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
 backend/.env
+*.pyc
+*.pyo
+*.pyd
+.Python
 
-backend/venv
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+backend/backend_log.txt
+
+# Test files
+test-*.html
+test_*.py
+debug_*.py
+*_output.txt
+
+# Development
+cursor_prompts.md
 deployment.md
 docker_setup.md
