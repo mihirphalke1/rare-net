@@ -103,12 +103,21 @@ This architecture directly implements [Charlcye Munyao's suggestions](https://gi
 
 ### One-Command Setup
 
+**For Linux/macOS (Bash):**
 ```bash
 # Clone and setup
 git clone https://github.com/your-org/rare-net.git
 cd rare-net
 chmod +x setup.sh
 ./setup.sh
+```
+
+**For Windows (PowerShell):**
+```powershell
+# Clone and setup
+git clone https://github.com/your-org/rare-net.git
+cd rare-net
+.\setup.bat
 ```
 
 The script will:
