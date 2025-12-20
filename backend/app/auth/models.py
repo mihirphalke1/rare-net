@@ -5,15 +5,15 @@ Defines User, Token, and related Pydantic models for JWT authentication.
 """
 
 from typing import Optional, Literal, Union
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class UserBase(BaseModel):
     """Base user model with common fields."""
-    email: EmailStr
+    email: str
     role: Literal["doctor", "admin"] = "doctor"
-    hospital: Optional[Literal["mumbai", "boston", "london"]] = None
+    hospital: Optional[str] = None
     full_name: Optional[str] = None
 
 
@@ -24,7 +24,7 @@ class UserCreate(UserBase):
 
 class UserLogin(BaseModel):
     """Model for login request."""
-    email: EmailStr
+    email: str
     password: str
 
 
@@ -34,8 +34,7 @@ class User(UserBase):
     is_active: bool = True
     created_at: Optional[str] = None  # Store as ISO string for JSON compatibility
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
         
     @classmethod
     def from_user_in_db(cls, user_in_db):

@@ -1,0 +1,188 @@
+﻿Testing login for: doctor@mumbai.hospital
+User found: doctor@mumbai.hospital, role: doctor, hospital: mumbai
+User ID: 5b7c0aca-488d-4fe5-9e97-508aa917624c
+Is active: True
+python : (trapped) error 
+reading bcrypt version
+At line:1 char:30
++ .\venv\Scripts\activate.ps
+1; python 
+test_login_debug.py 2>&1 | 
+Out-Fi ...
++                           
+   ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ((trap  
+  ped) error reading bcry   
+ pt version:String) [],     
+RemoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+Traceback (most recent call 
+last):
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 620, 
+in _load_backend_mixin
+    version = _bcrypt.__abou
+t__.__version__
+              
+^^^^^^^^^^^^^^^^^
+AttributeError: module 
+'bcrypt' has no attribute 
+'__about__'
+Traceback (most recent call 
+last):
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\test_l
+ogin_debug.py", line 27, in 
+<module>
+    password_valid = 
+verify_password(password, 
+user.hashed_password)
+  File "c:\Users\aakan\Downl
+oads\rare-net\backend\app\au
+th\jwt_handler.py", line 
+61, in verify_password
+    return pwd_context.verif
+y(plain_password, 
+hashed_password)
+           ~~~~~~~~~~~~~~~~~
+~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\con
+text.py", line 2347, in 
+verify
+    return 
+record.verify(secret, hash, 
+**kwds)
+           ~~~~~~~~~~~~~^^^^
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 792, 
+in verify
+    return consteq(self._cal
+c_checksum(secret), chk)
+                   
+~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 591, 
+in _calc_checksum
+    self._stub_requires_back
+end()
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2254, 
+in _stub_requires_backend
+    cls.set_backend()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2156, 
+in set_backend
+    return 
+owner.set_backend(name, 
+dryrun=dryrun)
+           ~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2163, 
+in set_backend
+    return 
+cls.set_backend(name, 
+dryrun=dryrun)
+           ~~~~~~~~~~~~~~~^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2188, 
+in set_backend
+    cls._set_backend(name, 
+dryrun)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2311, 
+in _set_backend
+    
+super(SubclassBackendMixin, 
+cls)._set_backend(name, 
+dryrun)
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 2224, 
+in _set_backend
+    ok = loader(**kwds)
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 626, 
+in _load_backend_mixin
+    return mixin_cls._finali
+ze_backend_mixin(name, 
+dryrun)
+           ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 421, 
+in _finalize_backend_mixin
+    if 
+detect_wrap_bug(IDENT_2A):
+       
+~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 380, 
+in detect_wrap_bug
+    if verify(secret, 
+bug_hash):
+       
+~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\uti
+ls\handlers.py", line 792, 
+in verify
+    return consteq(self._cal
+c_checksum(secret), chk)
+                   
+~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\aakan\Downl
+oads\rare-net\backend\venv\L
+ib\site-packages\passlib\han
+dlers\bcrypt.py", line 655, 
+in _calc_checksum
+    hash = 
+_bcrypt.hashpw(secret, 
+config)
+ValueError: password cannot 
+be longer than 72 bytes, 
+truncate manually if 
+necessary (e.g. 
+my_password[:72])

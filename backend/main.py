@@ -13,7 +13,7 @@ import time
 import uuid
 from typing import List, Optional, Literal
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -50,83 +50,28 @@ app = FastAPI(
 # CORS Setup - Must be added before other middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
-# Global exception handlers to ensure CORS headers in error responses
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    origin = request.headers.get("origin", "")
-    allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-    
-    headers = {}
-    if origin in allowed_origins:
-        headers = {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-        }
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-        headers=headers
-    )
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    origin = request.headers.get("origin", "")
-    allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-    
-    headers = {}
-    if origin in allowed_origins:
-        headers = {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-        }
-    
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors()},
-        headers=headers
-    )
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    import traceback
-    import sys
-    origin = request.headers.get("origin", "")
-    allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-    
-    headers = {}
-    if origin in allowed_origins:
-        headers = {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-        }
-    
-    # Log the error for debugging - print to stderr so it shows in console
-    error_msg = str(exc)
-    print(f"\n{'='*60}", file=sys.stderr)
-    print(f"ERROR: {error_msg}", file=sys.stderr)
-    print(f"{'='*60}", file=sys.stderr)
-    traceback.print_exc(file=sys.stderr)
-    print(f"{'='*60}\n", file=sys.stderr)
-    
-    return JSONResponse(
-        status_code=500,
-        content={"detail": error_msg, "error_type": type(exc).__name__},
-        headers=headers
-    )
 
 # Include auth router
 app.include_router(auth_router)
 
-# Initialize Embedding Model
-model = SentenceTransformer('all-MiniLM-L6-v2')
+print("APP STARTED - Auth router included")
+
+# Initialize Embedding Model (lazy-loaded to avoid consuming request body stream)
+model = None
+
+def get_embedding_model():
+    """Lazy-load the embedding model to avoid ASGI body stream conflicts."""
+    global model
+    if model is None:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+    return model
+
 
 
 # ============================================

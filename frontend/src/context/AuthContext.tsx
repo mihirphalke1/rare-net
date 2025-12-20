@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_URL = import.meta.env.VITE_API_URL || '';
+console.log("API_URL =", API_URL || "(using proxy)");
 
 // Types
 export interface User {
@@ -60,9 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(JSON.parse(storedUser));
         } else {
           // Token expired, try refresh
-          refreshToken().catch(() => {
+          // Guard refreshToken in case it's not defined or fails
+          if (typeof refreshToken === "function") {
+            refreshToken().catch(() => clearAuth());
+          } else {
             clearAuth();
-          });
+          }
         }
       } catch {
         clearAuth();
@@ -83,22 +87,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login function
   const login = async (email: string, password: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+    } catch (err) {
+      throw new Error("Network error: backend not reachable");
+    }
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+      const text = await response.text();
+      // Try to parse JSON error if possible
+      try {
+        const jsonError = JSON.parse(text);
+        if (jsonError.detail) {
+          throw new Error(jsonError.detail);
+        }
+      } catch (e) {
+        // If not JSON, use text
+      }
+      throw new Error(`Login failed (${response.status}): ${text}`);
     }
 
     const data = await response.json();
 
-    // Store tokens and user
     localStorage.setItem(TOKEN_KEY, data.access_token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    if (data.refresh_token) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    }
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
 
     setToken(data.access_token);

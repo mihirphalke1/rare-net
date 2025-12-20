@@ -379,10 +379,10 @@ npm run dev
 
 ## Demo Credentials
 
-| Role   | Email                  | Password  | Hospital       |
-| ------ | ---------------------- | --------- | -------------- |
-| Doctor | doctor@mumbai.hospital | doctor123 | Mumbai General |
-| Admin  | admin@rarenet.org      | admin123  | Network Admin  |
+| Role   | Email                  | Password     | Hospital       |
+| ------ | ---------------------- | ------------ | -------------- |
+| Doctor | doctor@mumbai.hospital | password123  | Mumbai General |
+| Admin  | admin@rarenet.org      | admin123     | Network Admin  |
 
 ---
 
