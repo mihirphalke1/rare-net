@@ -6,6 +6,34 @@ RareNet enables cross-institutional rare disease diagnosis while ensuring patien
 
 ---
 
+## 🔧 Recent Fixes (December 2025)
+
+### Fixed: 500 Internal Server Error on Diagnosis Endpoint
+
+**Issue**: The `/api/diagnose` endpoint was returning 500 errors due to the embedding model not being properly initialized.
+
+**Root Cause**: The code was calling `model.encode()` directly, but `model` was set to `None` and never initialized. The `get_embedding_model()` function existed but was never called.
+
+**Fix Applied**: Updated all three locations where `model.encode()` was called:
+- `/api/diagnose` (line 215)
+- `/api/report` (line 310) 
+- `/api/patient` (line 447)
+
+Changed from:
+```python
+query_vector = model.encode(request.symptoms).tolist()
+```
+
+To:
+```python
+embedding_model = get_embedding_model()
+query_vector = embedding_model.encode(request.symptoms).tolist()
+```
+
+**Status**: ✅ **RESOLVED** - All endpoints now working correctly with proper lazy loading of the sentence-transformer model.
+
+---
+
 ## Problem Statement
 
 Rare diseases affect 300+ million people globally, yet diagnosis takes an average of **5-7 years** due to:
@@ -342,22 +370,39 @@ cd backend
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# On Windows:
+.\venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
+# Start the server (this will auto-load the embedding model on first request)
+uvicorn main:app --host 127.0.0.1 --port 8001 --reload
+```
+
+**Important**: The server must be running before seeding users and data.
+
+### 4. Seed Demo Data (in a new terminal)
+
+```bash
+cd backend
+
+# Activate virtual environment (if not already active)
+# Windows: .\venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+
 # Seed demo users
-python -c "from app.auth.user_store import seed_users; seed_users()"
+curl -X POST http://127.0.0.1:8001/auth/seed-demo-users
 
 # Initialize database with patient data (315+ cases)
 python scripts/init_db.py
-
-# Start server
-uvicorn main:app --reload --port 8001
 ```
 
-### 4. Frontend Setup
+### 5. Frontend Setup
 
 ```bash
 cd frontend
@@ -369,20 +414,88 @@ npm install
 npm run dev
 ```
 
-### 5. Access the Application
+### 6. Access the Application
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8001
 - **API Docs**: http://localhost:8001/docs
+- **CyborgDB**: http://localhost:8000
 
 ---
 
 ## Demo Credentials
 
-| Role   | Email                  | Password     | Hospital       |
-| ------ | ---------------------- | ------------ | -------------- |
-| Doctor | doctor@mumbai.hospital | password123  | Mumbai General |
-| Admin  | admin@rarenet.org      | admin123     | Network Admin  |
+After seeding, use these credentials to log in:
+
+| Role   | Email                     | Password     | Hospital  |
+| ------ | ------------------------- | ------------ | --------- |
+| Doctor | doctor@mumbai.hospital    | password123  | Mumbai    |
+| Doctor | doctor@boston.hospital    | password123  | Boston    |
+| Doctor | doctor@london.hospital    | password123  | London    |
+| Admin  | admin@rarenet.org         | admin123     | N/A       |
+
+---
+
+## Quick Verification
+
+After setup, verify everything is working:
+
+### 1. Test Backend Health
+
+```bash
+curl http://127.0.0.1:8001/api/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "model": "loaded",
+  "privacy_threshold": 5,
+  "epsilon": 0.1,
+  "timestamp": "2025-12-20T10:53:10.436694"
+}
+```
+
+### 2. Test Login
+
+```bash
+curl -X POST http://127.0.0.1:8001/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@mumbai.hospital","password":"password123"}'
+```
+
+Expected: Should return `access_token`, `refresh_token`, and user profile.
+
+### 3. Test Diagnosis (requires token from step 2)
+
+```bash
+# First, get a token
+TOKEN=$(curl -s -X POST http://127.0.0.1:8001/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@mumbai.hospital","password":"password123"}' \
+  | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
+
+# Then test diagnosis
+curl -X POST http://127.0.0.1:8001/api/diagnose \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"symptoms":"joint hypermobility, easy bruising, stretchy skin","top_k":20}'
+```
+
+Expected: Should return diagnostic insight with `suggested_diagnosis`, `confidence_score`, and privacy audit information.
+
+**Note**: The first diagnosis request may take 25-30 seconds as the embedding model loads. Subsequent requests will be fast.
+
+### 4. Test Frontend
+
+1. Open http://localhost:5173 in your browser
+2. Click "Sign In" 
+3. Login with `doctor@mumbai.hospital` / `password123`
+4. You should see the search interface with a green "online" indicator
+5. Try searching for: `joint hypermobility, easy bruising, stretchy skin`
+6. You should receive a diagnosis result for Ehlers-Danlos Syndrome
 
 ---
 
@@ -627,6 +740,140 @@ rare-net/
 3. **Frontend Bundle**: Current bundle is 436KB gzipped. Consider:
    - Code splitting for routes
    - Lazy loading for non-critical components
+
+---
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. 500 Internal Server Error on `/api/diagnose`
+
+**Symptom**: Backend returns 500 error when trying to diagnose symptoms.
+
+**Cause**: The embedding model was not properly initialized.
+
+**Solution**: This has been fixed in the current version. The model now uses lazy loading via `get_embedding_model()`. If you still encounter this:
+
+```python
+# Verify the fix is in place in backend/main.py
+# Lines should read:
+embedding_model = get_embedding_model()
+query_vector = embedding_model.encode(request.symptoms).tolist()
+```
+
+#### 2. "Incorrect email or password" on Login
+
+**Symptom**: Cannot log in with demo credentials.
+
+**Cause**: Demo users haven't been seeded yet.
+
+**Solution**:
+```bash
+# Make sure backend is running, then:
+curl -X POST http://127.0.0.1:8001/auth/seed-demo-users
+```
+
+#### 3. CORS Errors in Browser Console
+
+**Symptom**: `Access-Control-Allow-Origin` errors in browser console.
+
+**Cause**: Frontend is running on a different port than expected.
+
+**Solution**: 
+- Ensure frontend is on `http://localhost:5173`
+- Check `backend/main.py` CORS settings include your frontend URL
+- If using a different port, update the CORS configuration:
+
+```python
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+#### 4. CyborgDB Connection Failed
+
+**Symptom**: `Connection refused` errors when querying.
+
+**Cause**: CyborgDB container is not running.
+
+**Solution**:
+```bash
+# Check if CyborgDB is running
+docker ps | grep cyborgdb
+
+# If not running, start it
+docker-compose up -d
+
+# Check logs
+docker-compose logs cyborgdb
+```
+
+#### 5. Slow First Request (~25-30 seconds)
+
+**Symptom**: First diagnosis request takes a very long time.
+
+**Cause**: This is **expected behavior**. The sentence-transformer model (`all-MiniLM-L6-v2`) is being downloaded and loaded into memory on the first request.
+
+**Solution**: This is normal. Subsequent requests will be fast (< 1 second). To pre-load the model:
+
+```bash
+# Make a test request after starting the server
+curl -X POST http://127.0.0.1:8001/api/diagnose \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"symptoms": "test", "top_k": 20}'
+```
+
+#### 6. Frontend Shows "Network Offline"
+
+**Symptom**: Red "offline" indicator in the header.
+
+**Cause**: Backend is not reachable.
+
+**Solution**:
+```bash
+# Check if backend is running
+curl http://127.0.0.1:8001/api/health
+
+# Should return: {"status":"healthy",...}
+
+# If not, restart backend:
+cd backend
+uvicorn main:app --host 127.0.0.1 --port 8001 --reload
+```
+
+#### 7. "Privacy protection active: Cohort size too small"
+
+**Symptom**: Diagnosis returns BLOCKED status.
+
+**Cause**: This is **expected behavior** for K-anonymity. Fewer than 5 matching cases were found.
+
+**Solution**: This is working as designed. Try:
+- A more common disease (e.g., "joint hypermobility, easy bruising")
+- Run `python scripts/init_db.py` to ensure all 315+ cases are seeded
+
+#### 8. Module Import Errors
+
+**Symptom**: `ModuleNotFoundError` when starting backend.
+
+**Cause**: Dependencies not installed or wrong Python environment.
+
+**Solution**:
+```bash
+# Ensure you're in the virtual environment
+# You should see (venv) in your prompt
+
+# Reinstall dependencies
+pip install -r requirements.txt
+
+# Verify Python version (must be 3.11+)
+python --version
+```
 
 ---
 
