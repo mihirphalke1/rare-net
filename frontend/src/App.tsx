@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth, getAuthHeader } from './context/AuthContext';
 import { LandingPage } from './pages/LandingPage';
@@ -62,7 +62,7 @@ interface DiagnoseResponse {
 type TabType = 'diagnose' | 'contribute' | 'my-cases';
 
 // Header Component
-function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveTab: (tab: TabType) => void }) {
+function AppHeader({ activeTab }: { activeTab: TabType }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [networkStatus, setNetworkStatus] = useState<'checking' | 'online' | 'offline'>('checking');
@@ -91,18 +91,20 @@ function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveT
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <Link to="/search" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Logo size={32} />
             <span className="text-lg font-bold text-slate-900 tracking-tight">
               RareNet
             </span>
+          </Link>
+          <div className="flex items-center gap-3">
             <NetworkStatus status={networkStatus} />
           </div>
 
           {/* Tabs */}
           <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-1">
             <button
-              onClick={() => setActiveTab('diagnose')}
+              onClick={() => navigate('/search')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 activeTab === 'diagnose'
                   ? 'bg-white text-sky-600 shadow-sm'
@@ -113,7 +115,7 @@ function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveT
               <span>Search</span>
             </button>
             <button
-              onClick={() => setActiveTab('my-cases')}
+              onClick={() => navigate('/my-cases')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 activeTab === 'my-cases'
                   ? 'bg-white text-sky-600 shadow-sm'
@@ -124,7 +126,7 @@ function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveT
               <span>My Cases</span>
             </button>
             <button
-              onClick={() => setActiveTab('contribute')}
+              onClick={() => navigate('/contribute')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 activeTab === 'contribute'
                   ? 'bg-white text-sky-600 shadow-sm'
@@ -165,12 +167,13 @@ function AppHeader({ activeTab, setActiveTab }: { activeTab: TabType; setActiveT
 }
 
 // Mobile Tab Bar Component
-function MobileTabBar({ activeTab, setActiveTab }: { activeTab: TabType; setActiveTab: (tab: TabType) => void }) {
+function MobileTabBar({ activeTab }: { activeTab: TabType }) {
+  const navigate = useNavigate();
   return (
     <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200 px-4 py-3">
       <div className="flex items-center bg-slate-100 rounded-full p-1">
         <button
-          onClick={() => setActiveTab('diagnose')}
+          onClick={() => navigate('/search')}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
             activeTab === 'diagnose'
               ? 'bg-white text-sky-600 shadow-sm'
@@ -181,7 +184,7 @@ function MobileTabBar({ activeTab, setActiveTab }: { activeTab: TabType; setActi
           <span>Search</span>
         </button>
         <button
-          onClick={() => setActiveTab('my-cases')}
+          onClick={() => navigate('/my-cases')}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
             activeTab === 'my-cases'
               ? 'bg-white text-sky-600 shadow-sm'
@@ -192,7 +195,7 @@ function MobileTabBar({ activeTab, setActiveTab }: { activeTab: TabType; setActi
           <span>Cases</span>
         </button>
         <button
-          onClick={() => setActiveTab('contribute')}
+          onClick={() => navigate('/contribute')}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
             activeTab === 'contribute'
               ? 'bg-white text-sky-600 shadow-sm'
@@ -528,11 +531,23 @@ function SearchPage() {
 
 // Main App Layout (authenticated)
 function MainLayout() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>('diagnose');
+
+  // Set initial tab based on route
+  useEffect(() => {
+    if (location.pathname === '/search') {
+      setActiveTab('diagnose');
+    } else if (location.pathname === '/my-cases') {
+      setActiveTab('my-cases');
+    } else if (location.pathname === '/contribute') {
+      setActiveTab('contribute');
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 pb-20 sm:pb-0">
-      <AppHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+      <AppHeader activeTab={activeTab} />
       
       <main className="max-w-6xl mx-auto px-6 py-8">
         <AnimatePresence mode="wait">
@@ -569,7 +584,7 @@ function MainLayout() {
         </AnimatePresence>
       </main>
 
-      <MobileTabBar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MobileTabBar activeTab={activeTab} />
     </div>
   );
 }

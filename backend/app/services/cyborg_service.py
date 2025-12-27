@@ -1,5 +1,6 @@
 import os
 import logging
+import secrets
 from typing import List, Dict, Any
 from cyborgdb import Client
 from app.models import Patient
@@ -8,8 +9,21 @@ from app.models import Patient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Demo key for hackathon (in production, use secure key management)
-DEMO_KEY_HEX = "0000000000000000000000000000000000000000000000000000000000000001"
+def get_encryption_key():
+    """
+    Get encryption key from environment or generate secure demo key.
+    
+    For production: Set CYBORGDB_ENCRYPTION_KEY environment variable.
+    For demo: Generates a cryptographically secure random key.
+    """
+    key_hex = os.getenv("CYBORGDB_ENCRYPTION_KEY")
+    if not key_hex:
+        # Generate a cryptographically secure demo key
+        logger.warning("⚠️  No CYBORGDB_ENCRYPTION_KEY set. Generating secure demo key.")
+        logger.warning("⚠️  For production, set environment variable: CYBORGDB_ENCRYPTION_KEY")
+        key_hex = secrets.token_hex(32)
+        logger.info(f"Demo key generated: {key_hex[:16]}... (save this for data persistence)")
+    return bytes.fromhex(key_hex)
 
 class CyborgService:
     def __init__(self):
@@ -37,7 +51,7 @@ class CyborgService:
             self.connected = False
             
         self.institutions = ["mumbai", "boston", "london"]
-        self.demo_key = bytes.fromhex(DEMO_KEY_HEX)
+        self.demo_key = get_encryption_key()
 
     def _ensure_connection(self):
         """Ensure CyborgDB connection is established."""

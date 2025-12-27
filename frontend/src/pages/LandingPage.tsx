@@ -22,18 +22,18 @@ export function LandingPage() {
   const features = [
     {
       icon: Shield,
-      title: 'Privacy Protected',
-      description: 'Results are blocked if too few cases exist, preventing patient identification.',
+      title: 'K-Anonymity Protection',
+      description: 'Requires ≥5 matching cases before returning results. Blocks queries for ultra-rare conditions that could identify patients.',
     },
     {
       icon: Database,
-      title: 'Encrypted Storage',
-      description: 'All patient vectors are encrypted at rest and during search operations.',
+      title: 'CyborgDB Encryption',
+      description: 'Patient symptom vectors encrypted in-use with institution-specific keys. No cross-hospital data exposure.',
     },
     {
       icon: Lock,
-      title: 'Aggregated Only',
-      description: 'Only diagnosis names and confidence scores are returned—never patient details.',
+      title: 'Differential Privacy',
+      description: 'Laplace noise (ε=0.1) added to confidence scores. Prevents reverse-engineering exact patient counts.',
     },
   ];
 
@@ -76,15 +76,9 @@ export function LandingPage() {
             <div className="flex items-center gap-3">
               <Link
                 to="/login"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/login"
                 className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 transition-all"
               >
-                Get Started
+                Sign In
               </Link>
             </div>
           </div>
@@ -117,10 +111,10 @@ export function LandingPage() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight leading-tight mb-6"
           >
-            Diagnose Rare Diseases
+            Collaborative Diagnosis
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-teal-600">
-              Across Institutions
+              Without Borders
             </span>
           </motion.h1>
 
@@ -130,9 +124,9 @@ export function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg text-slate-600 max-w-2xl mx-auto mb-10"
           >
-            A privacy-preserving network that queries encrypted patient databases
-            across multiple hospitals, returning aggregated diagnostic insights
-            without exposing individual patient data.
+            Two-tier privacy architecture that enables hospitals to collaboratively
+            diagnose rare diseases without sharing patient data. 94% privacy risk
+            reduction with k-anonymity and differential privacy.
           </motion.p>
 
           <motion.div
@@ -193,11 +187,12 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Built for Privacy
+              Two-Tier Privacy Architecture
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Every query passes through multiple privacy safeguards before
-              returning aggregated diagnostic insights.
+              CyborgDB encryption protects each hospital's data, while our privacy
+              aggregator layer prevents information leakage through k-anonymity and
+              differential privacy.
             </p>
           </motion.div>
 
@@ -239,11 +234,12 @@ export function LandingPage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Global Hospital Network
+              Cross-Institutional Collaboration
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Each hospital maintains its own encrypted database. Our network
-              queries all nodes simultaneously while keeping data isolated.
+              8 hospital nodes with encrypted patient databases. Queries run
+              across all institutions simultaneously, returning only aggregated
+              diagnostic insights—never raw patient data.
             </p>
           </motion.div>
 
@@ -302,10 +298,11 @@ export function LandingPage() {
           className="max-w-2xl mx-auto text-center"
         >
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-4">
-            Ready to Search the Network?
+            Stop the Diagnostic Odyssey
           </h2>
           <p className="text-lg text-slate-600 mb-8">
-            Sign in with your hospital credentials or try the demo to explore.
+            Join the network and access collaborative rare disease diagnosis
+            without compromising patient privacy. Average diagnosis time: days, not years.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

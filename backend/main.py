@@ -115,6 +115,38 @@ def read_root():
     }
 
 
+@app.get("/health")
+def health_check_root():
+    """Basic health check endpoint"""
+    return {"status": "ok", "version": "4.0"}
+
+@app.get("/ready")
+def readiness_check():
+    """
+    Readiness check - verifies all dependencies are available.
+    Returns 200 if ready, 503 if not ready.
+    """
+    try:
+        # Check CyborgDB connection
+        if not cyborg_service.connected:
+            cyborg_service._ensure_connection()
+        
+        # Check if embedding model can be loaded
+        test_model = get_embedding_model()
+        
+        return {
+            "status": "ready",
+            "cyborgdb": "connected",
+            "embedding_model": "loaded",
+            "version": "4.0"
+        }
+    except Exception as e:
+        logger.error(f"Readiness check failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Service not ready: {str(e)}"
+        )
+
 @app.get("/api/health")
 def health_check():
     """Health check endpoint for monitoring."""
