@@ -167,10 +167,19 @@ class PrivacyAggregator:
             if diagnosis == 'Unknown' or not diagnosis:
                 continue
                 
-            # Use similarity score as vote weight (default to 0.5 if missing)
-            score = match.get('score', 0.5)
+            # CyborgDB returns 'distance' (lower is better), convert to similarity score
+            # score = 1 - distance (higher is better)
+            if 'distance' in match:
+                score = 1.0 - match['distance']
+            elif 'score' in match:
+                score = match['score']
+            else:
+                score = 0.5  # Default fallback
+            
+            # Clamp score to valid range
+            score = max(0.0, min(1.0, score))
             if score == 0:
-                score = 0.5  # Handle zero scores
+                score = 0.01  # Avoid zero scores
                 
             diagnosis_scores[diagnosis] += score
             diagnosis_counts[diagnosis] += 1
