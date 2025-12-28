@@ -1,18 +1,13 @@
 {
-  "total_searches": 5,
-  "searches_today": 5,
-  "total_confidence_sum": 3.0,
+  "total_searches": 11,
+  "searches_today": 11,
+  "total_confidence_sum": 4.96,
   "disease_counts": {
     "Ehlers-Danlos Syndrome (Vascular Type)": 4,
-    "Ehlers-Danlos Syndrome": 1
+    "Ehlers-Danlos Syndrome": 6,
+    "Stiff Person Syndrome": 1
   },
   "hourly_searches": [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
     0,
     0,
     0,
@@ -30,7 +25,13 @@
     2,
     3,
     4,
-    5
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
   ],
   "last_reset": "2025-12-28"
 }

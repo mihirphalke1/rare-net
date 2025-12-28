@@ -326,8 +326,40 @@ class PrivacyAggregator:
         # Step 1: Query all nodes
         all_matches, context = self.query_all_nodes(symptom_vector)
         
-        # Step 2: K-Anonymity check
-        k_passed, k_message = self.apply_k_anonymity(all_matches, context)
+        # If no matches at all, return early
+        if not all_matches or context.raw_matches_found == 0:
+            audit = {
+                "vectors_scanned": context.vectors_scanned,
+                "institutions_queried": context.institutions_queried,
+                "raw_matches_found": 0,
+                "privacy_threshold": context.privacy_threshold,
+                "threshold_passed": False,
+                "noise_epsilon": context.noise_epsilon,
+                "data_returned": "NO_MATCHES"
+            }
+            insight = {
+                "suggested_diagnosis": "No Matches Found",
+                "confidence_score": 0.0,
+                "recommended_tests": [],
+                "specialist_referral": "",
+                "privacy_status": "NO_MATCHES",
+                "privacy_message": "No matching cases found in the network."
+            }
+            return insight, audit
+        
+        # Step 2: Aggregate diagnoses to find the top diagnosis
+        aggregation = self.aggregate_diagnoses(all_matches, context)
+        top_diagnosis = aggregation["diagnosis"]
+        
+        # Step 3: K-Anonymity check on the TOP DIAGNOSIS ONLY
+        # Count how many patients have the winning diagnosis
+        top_diagnosis_matches = [
+            m for m in all_matches 
+            if m.get('metadata', {}).get('diagnosis', '') == top_diagnosis
+        ]
+        top_diagnosis_count = len(set(m.get('id', '') for m in top_diagnosis_matches if m.get('id')))
+        
+        logger.info(f"[Privacy] Top diagnosis '{top_diagnosis}' has {top_diagnosis_count} unique cases")
         
         # Build audit log
         audit = {
@@ -335,29 +367,32 @@ class PrivacyAggregator:
             "institutions_queried": context.institutions_queried,
             "raw_matches_found": context.raw_matches_found,
             "privacy_threshold": context.privacy_threshold,
-            "threshold_passed": context.threshold_passed,
+            "threshold_passed": top_diagnosis_count >= self.PRIVACY_THRESHOLD,
             "noise_epsilon": context.noise_epsilon,
-            "data_returned": "BLOCKED" if not k_passed else "AGGREGATED_INSIGHT"
+            "data_returned": "BLOCKED" if top_diagnosis_count < self.PRIVACY_THRESHOLD else "AGGREGATED_INSIGHT",
+            "diagnosis_distribution": context.diagnoses_found
         }
         
-        # If K-anonymity fails, return blocked result
-        if not k_passed:
-            # Determine if it's "no matches" vs "privacy blocked"
-            status = "NO_MATCHES" if context.raw_matches_found == 0 else "BLOCKED"
-            diagnosis_text = "No Matches Found" if context.raw_matches_found == 0 else "Privacy Protected"
+        # If the top diagnosis has < K cases, BLOCK it
+        if top_diagnosis_count < self.PRIVACY_THRESHOLD:
+            self.queries_blocked_today += 1
+            k_message = (
+                f"Privacy protection active: The top matching diagnosis ('{top_diagnosis}') "
+                f"has only {top_diagnosis_count} case(s) in the network, which is below "
+                f"the minimum threshold ({self.PRIVACY_THRESHOLD}) required for safe results. "
+                f"This protects patients with extremely rare conditions from identification."
+            )
+            logger.info(f"[K-Anonymity] BLOCKED - Top diagnosis '{top_diagnosis}' has {top_diagnosis_count} < {self.PRIVACY_THRESHOLD}")
             
             insight = {
-                "suggested_diagnosis": diagnosis_text,
+                "suggested_diagnosis": "Privacy Protected",
                 "confidence_score": 0.0,
                 "recommended_tests": [],
                 "specialist_referral": "",
-                "privacy_status": status,
+                "privacy_status": "BLOCKED",
                 "privacy_message": k_message
             }
             return insight, audit
-        
-        # Step 3: Aggregate diagnoses
-        aggregation = self.aggregate_diagnoses(all_matches, context)
         
         # Step 4: Add differential privacy
         noisy_confidence = self.add_differential_privacy(aggregation["raw_confidence"])

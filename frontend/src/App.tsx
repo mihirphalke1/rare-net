@@ -13,7 +13,7 @@ import { NetworkStatus } from './components/NetworkStatus';
 import { ContributorMode } from './components/ContributorMode';
 import { MyCases } from './components/MyCases';
 import { PrivacyVisualizer } from './components/PrivacyVisualizer';
-import { 
+import {
   Shield,
   Search,
   Upload,
@@ -103,33 +103,30 @@ function AppHeader({ activeTab }: { activeTab: TabType }) {
           <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-1">
             <button
               onClick={() => navigate('/search')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-                activeTab === 'diagnose'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${activeTab === 'diagnose'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               <Search className="w-4 h-4" />
               <span>Search</span>
             </button>
             <button
               onClick={() => navigate('/my-cases')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                activeTab === 'my-cases'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'my-cases'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               <Database className="w-4 h-4" />
               <span>My Cases</span>
             </button>
             <button
               onClick={() => navigate('/contribute')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                activeTab === 'contribute'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'contribute'
+                ? 'bg-white text-sky-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               <Upload className="w-4 h-4" />
               <span>Contribute</span>
@@ -139,7 +136,7 @@ function AppHeader({ activeTab }: { activeTab: TabType }) {
           {/* Right side - Network + User */}
           <div className="flex items-center gap-3 shrink-0">
             <NetworkStatus status={networkStatus} />
-            
+
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100">
               <User className="w-4 h-4 text-slate-400" />
               <span className="text-sm text-slate-600">{user?.email?.split('@')[0]}</span>
@@ -174,33 +171,30 @@ function MobileTabBar({ activeTab }: { activeTab: TabType }) {
       <div className="flex items-center bg-slate-100 rounded-full p-1">
         <button
           onClick={() => navigate('/search')}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
-            activeTab === 'diagnose'
-              ? 'bg-white text-sky-600 shadow-sm'
-              : 'text-slate-500'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${activeTab === 'diagnose'
+            ? 'bg-white text-sky-600 shadow-sm'
+            : 'text-slate-500'
+            }`}
         >
           <Search className="w-4 h-4" />
           <span>Search</span>
         </button>
         <button
           onClick={() => navigate('/my-cases')}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
-            activeTab === 'my-cases'
-              ? 'bg-white text-sky-600 shadow-sm'
-              : 'text-slate-500'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${activeTab === 'my-cases'
+            ? 'bg-white text-sky-600 shadow-sm'
+            : 'text-slate-500'
+            }`}
         >
           <Database className="w-4 h-4" />
           <span>Cases</span>
         </button>
         <button
           onClick={() => navigate('/contribute')}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
-            activeTab === 'contribute'
-              ? 'bg-white text-sky-600 shadow-sm'
-              : 'text-slate-500'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${activeTab === 'contribute'
+            ? 'bg-white text-sky-600 shadow-sm'
+            : 'text-slate-500'
+            }`}
         >
           <Upload className="w-4 h-4" />
           <span>Add</span>
@@ -239,9 +233,9 @@ function SearchPage() {
       console.log('⏳ Waiting for token...');
       return; // Wait for token to be available
     }
-    
+
     console.log('🔄 Fetching network stats with token:', token?.substring(0, 20) + '...');
-    
+
     const fetchStats = async () => {
       try {
         const response = await fetch(`${API_URL}/api/stats`, {
@@ -266,7 +260,7 @@ function SearchPage() {
   // Fetch privacy metrics
   useEffect(() => {
     if (!token) return; // Wait for token to be available
-    
+
     const fetchPrivacyMetrics = async () => {
       try {
         const response = await fetch(`${API_URL}/api/privacy/metrics`, {
@@ -291,7 +285,7 @@ function SearchPage() {
     setInsight(null);
     setAudit(null);
     setCurrentQuery(query);
-    
+
     try {
       const steps = [
         'Encoding symptoms...',
@@ -299,15 +293,15 @@ function SearchPage() {
         'Applying privacy filters...',
         'Aggregating results...'
       ];
-      
+
       for (const step of steps) {
         setSearchStep(step);
         await new Promise(r => setTimeout(r, 150));
       }
-      
+
       const response = await fetch(`${API_URL}/api/diagnose`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeader(token)
         },
@@ -320,7 +314,7 @@ function SearchPage() {
       setInsight(data.insight);
       setAudit(data.audit);
       setSearchTime(data.search_time_ms);
-      
+
     } catch (error) {
       console.error('Error:', error);
       setInsight({
@@ -339,15 +333,15 @@ function SearchPage() {
 
   // Example queries for quick search
   const exampleQueries = [
-    { label: 'Ehlers-Danlos', query: 'joint hypermobility, easy bruising, stretchy skin' },
-    { label: 'Kawasaki', query: 'high fever, strawberry tongue, rash, conjunctivitis' },
-    { label: 'Pompe', query: 'muscle weakness, cardiomegaly, respiratory difficulty' },
+    { label: 'Ehlers-Danlos ✅', query: 'joint hypermobility, easy bruising, stretchy skin', type: 'success' },
+    { label: 'Kawasaki ✅', query: 'high fever, strawberry tongue, rash, conjunctivitis', type: 'success' },
+    { label: 'Ghost Case 🛑', query: 'stiffness in trunk muscles, exaggerated startle response, episodic spasms, hyperlordosis', type: 'blocked' },
   ];
 
   return (
     <div className="space-y-8">
       {/* Search Section */}
-      <motion.section 
+      <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
@@ -360,9 +354,9 @@ function SearchPage() {
         </p>
 
         <div className="max-w-2xl mx-auto">
-          <SearchConsole 
-            onSearch={handleSearch} 
-            isSearching={isSearching} 
+          <SearchConsole
+            onSearch={handleSearch}
+            isSearching={isSearching}
           />
         </div>
 
@@ -395,7 +389,7 @@ function SearchPage() {
             className="grid lg:grid-cols-3 gap-6"
           >
             <div className="lg:col-span-2">
-              <DiagnosticInsight 
+              <DiagnosticInsight
                 insight={insight}
                 audit={audit}
                 searchTime={searchTime}
@@ -424,16 +418,11 @@ function SearchPage() {
                     <span className="text-sm text-slate-500">Hospitals Queried</span>
                     <span className="text-sm font-medium text-slate-900">{audit.institutions_queried}</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-slate-50">
-                    <span className="text-sm text-slate-500">Matches Found</span>
-                    <span className="text-sm font-medium text-slate-900">{audit.raw_matches_found}</span>
-                  </div>
-                  
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg mt-4 ${
-                    audit.threshold_passed 
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-amber-50 text-amber-700'
-                  }`}>
+
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg mt-4 ${audit.threshold_passed
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-amber-50 text-amber-700'
+                    }`}>
                     <Shield className="w-4 h-4" />
                     <span className="text-sm font-medium">
                       Privacy: {audit.threshold_passed ? 'Verified' : 'Protected'}
@@ -548,10 +537,10 @@ function SearchPage() {
                 <Shield className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-semibold text-slate-900">Privacy-Preserving Network</h3>
               </div>
-              
+
               <div className="space-y-3 text-sm text-slate-600">
                 <p>
-                  RareNet queries <strong>{networkStats?.hospital_count || 8} hospital nodes</strong> globally, 
+                  RareNet queries <strong>{networkStats?.hospital_count || 8} hospital nodes</strong> globally,
                   but you will only receive:
                 </p>
                 <ul className="space-y-2 ml-4">
@@ -599,7 +588,7 @@ function MainLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 pb-20 sm:pb-0">
       <AppHeader activeTab={activeTab} />
-      
+
       <main className="max-w-6xl mx-auto px-6 py-8">
         <AnimatePresence mode="wait">
           {activeTab === 'diagnose' && (

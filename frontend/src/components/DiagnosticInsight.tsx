@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   ShieldAlert,
-  Stethoscope, 
-  TestTube, 
+  Stethoscope,
+  TestTube,
   Activity,
   AlertTriangle,
   Lock,
@@ -69,7 +69,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
           <p className="text-sm text-slate-500 text-center max-w-xs">
             Running privacy-preserving search across encrypted hospital databases...
           </p>
-          
+
           {/* Progress bar */}
           <div className="w-64 h-1.5 bg-slate-100 rounded-full mt-6 overflow-hidden">
             <div className="h-full progress-animated rounded-full" />
@@ -133,7 +133,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
 
         <div className="p-8">
           <p className="text-slate-600 mb-6 leading-relaxed">
-            {insight.privacy_message || 
+            {insight.privacy_message ||
               "The query does not contain valid medical symptoms. Please enter recognized medical terms."}
           </p>
 
@@ -160,7 +160,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
               <div className="flex items-start gap-3">
                 <Stethoscope className="w-5 h-5 text-sky-500 mt-0.5 flex-shrink-0" />
@@ -280,7 +280,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
 
         <div className="p-8">
           <p className="text-slate-600 mb-6 leading-relaxed">
-            {insight.privacy_message || 
+            {insight.privacy_message ||
               "The cohort size is below the minimum threshold required to safely return results. This protects patients with extremely rare conditions from identification."}
           </p>
 
@@ -296,7 +296,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
               <div className="flex items-start gap-3">
                 <Lock className="w-5 h-5 text-sky-500 mt-0.5 flex-shrink-0" />
@@ -315,17 +315,20 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-2xl font-bold text-slate-800">{audit.raw_matches_found}</p>
-                  <p className="text-xs text-slate-500">Matches Found</p>
+                  <p className="text-xs text-slate-500">Total Scanned</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-amber-600">&lt;{audit.privacy_threshold}</p>
-                  <p className="text-xs text-slate-500">Below Threshold</p>
+                  <p className="text-xs text-slate-500">Top Diagnosis</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-800">{searchTime.toFixed(0)}ms</p>
                   <p className="text-xs text-slate-500">Search Time</p>
                 </div>
               </div>
+              <p className="text-xs text-slate-400 text-center mt-3">
+                Searched {audit.raw_matches_found} total cases, but top match has &lt;{audit.privacy_threshold} patients
+              </p>
             </div>
           )}
         </div>
@@ -335,7 +338,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
 
   // Success state - Privacy PASSED
   const confidencePercent = Math.round(insight.confidence_score * 100);
-  
+
   const getConfidenceColor = () => {
     if (confidencePercent >= 80) return { text: 'text-emerald-600', bg: 'bg-emerald-500', bar: 'from-emerald-500 to-teal-500', light: 'bg-emerald-50' };
     if (confidencePercent >= 60) return { text: 'text-sky-600', bg: 'bg-sky-500', bar: 'from-sky-500 to-cyan-500', light: 'bg-sky-50' };
@@ -370,7 +373,7 @@ export const DiagnosticInsight = ({ insight, audit, searchTime, isLoading, query
                 </p>
               </div>
             </div>
-            
+
             {searchTime > 0 && (
               <div className="flex items-center gap-1.5 text-slate-400">
                 <Clock className="w-4 h-4" />

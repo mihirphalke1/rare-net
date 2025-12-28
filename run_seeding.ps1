@@ -1,130 +1,189 @@
-# RareNet Optimal Seeding Script
-# This script starts all services and seeds the database efficiently
+# RareNet Ultimate Seeding & Startup Script
+# Features: Auto-load .env, Fresh Start Option, Smart Health Checks, Full 8-Hospital Seeding
 
-Write-Host "RareNet Optimal Seeding Workflow" -ForegroundColor Cyan
-$separator = "=" * 60
-Write-Host $separator -ForegroundColor Gray
+Write-Host "RareNet Ultimate Seeding Workflow" -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Gray
 
-# Step 1: Start Docker Services
-Write-Host ""
-Write-Host "Step 1: Starting CyborgDB and Redis via Docker..." -ForegroundColor Yellow
-docker-compose up -d
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Docker failed to start. Please ensure Docker Desktop is running." -ForegroundColor Red
-    Write-Host "Start Docker Desktop and run this script again." -ForegroundColor Yellow
+# ---------------------------------------------------------
+# 1. Parse .env file
+# ---------------------------------------------------------
+Write-Host "Step 1: Loading configuration from backend/.env..." -ForegroundColor Yellow
+$envPath = "backend\.env"
+if (Test-Path $envPath) {
+    Get-Content $envPath | ForEach-Object {
+        if ($_ -match "^\s*([^#=]+)=(.*)$") {
+            $key = $matches[1].Trim()
+            $value = $matches[2].Trim()
+            # Remove quotes if present
+            $value = $value -replace '^"|"$', ''
+            [System.Environment]::SetEnvironmentVariable($key, $value, [System.EnvironmentVariableTarget]::Process)
+            # Write-Host "  Loaded: $key" -ForegroundColor Gray
+        }
+    }
+    Write-Host "Configuration loaded successfully." -ForegroundColor Green
+} else {
+    Write-Host "ERROR: backend/.env not found! Please create it first." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Docker services started" -ForegroundColor Green
+# Verify critical keys
+if (-not $env:CYBORGDB_ENCRYPTION_KEY) {
+    Write-Host "ERROR: CYBORGDB_ENCRYPTION_KEY not found in .env" -ForegroundColor Red
+    exit 1
+}
 
-# Step 2: Wait for services to be healthy
+# ---------------------------------------------------------
+# 2. Fresh Start Prompts
+# ---------------------------------------------------------
 Write-Host ""
-Write-Host "Step 2: Waiting for services to be healthy..." -ForegroundColor Yellow
-Start-Sleep -Seconds 5
+Write-Host "Do you want to RESET all data? (Recommended for clean demo)" -ForegroundColor Yellow
+$response = Read-Host "Type 'y' for YES, or enter to skip"
 
-$maxRetries = 12
+if ($response -eq 'y') {
+    Write-Host "Step 2: NUKING Redis data..." -ForegroundColor Magenta
+    docker-compose down -v
+    Start-Sleep -Seconds 2
+} else {
+    Write-Host "Step 2: Keeping existing data..." -ForegroundColor Gray
+}
+
+# ---------------------------------------------------------
+# 3. Start Docker
+# ---------------------------------------------------------
+Write-Host ""
+Write-Host "Step 3: Starting CyborgDB and Redis..." -ForegroundColor Yellow
+docker-compose up -d
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Docker failed to start. Is Docker Desktop running?" -ForegroundColor Red
+    exit 1
+}
+
+# ---------------------------------------------------------
+# 4. Smart Health Check (Polled)
+# ---------------------------------------------------------
+Write-Host ""
+Write-Host "Step 4: Waiting for CyborgDB (http://localhost:8000/v1/health)..." -ForegroundColor Yellow
+
+$maxRetries = 30
 $retryCount = 0
 $cyborgHealthy = $false
 
 while ($retryCount -lt $maxRetries -and -not $cyborgHealthy) {
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8000/health" -Method GET -TimeoutSec 2 -ErrorAction SilentlyContinue
+        $response = Invoke-WebRequest -Uri "http://localhost:8000/v1/health" -Method GET -TimeoutSec 2 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
             $cyborgHealthy = $true
-            Write-Host "CyborgDB is healthy" -ForegroundColor Green
+            Write-Host "  ✅ CyborgDB is ONLINE" -ForegroundColor Green
         }
     } catch {
         $retryCount++
-        Write-Host "Waiting for CyborgDB... ($retryCount/$maxRetries)" -ForegroundColor Gray
+        Write-Host "  ...waiting ($retryCount/$maxRetries)" -NoNewline
         Start-Sleep -Seconds 2
     }
 }
 
 if (-not $cyborgHealthy) {
-    Write-Host "CyborgDB failed to become healthy" -ForegroundColor Red
-    docker-compose logs cyborgdb
+    Write-Host "`nERROR: CyborgDB failed to start." -ForegroundColor Red
+    docker-compose logs --tail 20 cyborgdb
     exit 1
 }
 
-# Step 3: Start Backend in background
+# ---------------------------------------------------------
+# 5. Start Backend
+# ---------------------------------------------------------
 Write-Host ""
-Write-Host "Step 3: Starting FastAPI Backend..." -ForegroundColor Yellow
+Write-Host "Step 5: Starting FastAPI Backend..." -ForegroundColor Yellow
 
-$env:CYBORGDB_ENCRYPTION_KEY = "deadbeef1234567890abcdef1234567890abcdef1234567890abcdef12345678"
-$env:PYTHONPATH = "C:\Users\aakan\Downloads\rare-net\backend"
+# Kill existing backend processes on port 8001 (optional but safe)
+$port = 8001
+$tcpConnection = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+if ($tcpConnection) {
+    Write-Host "  Killing existing backend on port $port..." -ForegroundColor Gray
+    Stop-Process -Id $tcpConnection.OwningProcess -Force -ErrorAction SilentlyContinue
+}
 
-# Start backend in a new PowerShell window
-$command = "cd C:\Users\aakan\Downloads\rare-net\backend; `$env:CYBORGDB_ENCRYPTION_KEY='deadbeef1234567890abcdef1234567890abcdef1234567890abcdef12345678'; `$env:PYTHONPATH='C:\Users\aakan\Downloads\rare-net\backend'; python -m uvicorn main:app --host 127.0.0.1 --port 8001 --reload"
+# Construct command with explicit environment variables passed to the new shell
+# We format the env vars as $env:KEY='VAL'; ...
+$command = "cd backend; " +
+           "`$env:CYBORGDB_ENCRYPTION_KEY='$($env:CYBORGDB_ENCRYPTION_KEY)'; " +
+           "`$env:CYBORGDB_API_KEY='$($env:CYBORGDB_API_KEY)'; " +
+           "python -m uvicorn main:app --host 127.0.0.1 --port 8001 --reload"
+
 $backendJob = Start-Process powershell -ArgumentList "-NoExit", "-Command", $command -PassThru
+Write-Host "  Backend launched (PID: $($backendJob.Id))" -ForegroundColor Green
 
-Write-Host "Backend starting (PID: $($backendJob.Id))" -ForegroundColor Green
-
-# Step 4: Wait for backend to be ready
+# ---------------------------------------------------------
+# 6. Wait for Backend Health
+# ---------------------------------------------------------
 Write-Host ""
-Write-Host "Step 4: Waiting for backend to be ready..." -ForegroundColor Yellow
-Start-Sleep -Seconds 8
+Write-Host "Step 6: Waiting for Backend API..." -ForegroundColor Yellow
 
-$maxRetries = 15
+$maxRetries = 30
 $retryCount = 0
 $backendHealthy = $false
 
 while ($retryCount -lt $maxRetries -and -not $backendHealthy) {
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8001/health" -Method GET -TimeoutSec 2 -ErrorAction SilentlyContinue
+        $response = Invoke-WebRequest -Uri "http://localhost:8001/api/health" -Method GET -TimeoutSec 2 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
             $backendHealthy = $true
-            Write-Host "Backend is healthy" -ForegroundColor Green
+            Write-Host "  ✅ Backend is ONLINE" -ForegroundColor Green
         }
     } catch {
         $retryCount++
-        Write-Host "Waiting for backend... ($retryCount/$maxRetries)" -ForegroundColor Gray
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
     }
 }
 
 if (-not $backendHealthy) {
-    Write-Host "Backend failed to start" -ForegroundColor Red
-    Write-Host "Check the backend window for errors" -ForegroundColor Yellow
+    Write-Host "ERROR: Backend failed to start." -ForegroundColor Red
     exit 1
 }
 
-# Step 5: Run the seeding script
+# ---------------------------------------------------------
+# 7. Run Seeding (Conditioned on Reset)
+# ---------------------------------------------------------
 Write-Host ""
-Write-Host "Step 5: Running database seeding..." -ForegroundColor Yellow
-Write-Host "This will populate the database with test data for privacy testing" -ForegroundColor Gray
-Write-Host ""
+if ($response -eq 'y') {
+    Write-Host "Step 7: Seeding 8 Hospitals (Global Network)..." -ForegroundColor Yellow
+    
+    cd backend
+    python scripts\seed_8_hospitals.py
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  ✅ Seeding Complete" -ForegroundColor Green
+    } else {
+        Write-Host "  ❌ Seeding Failed" -ForegroundColor Red
+        exit 1
+    }
 
-cd C:\Users\aakan\Downloads\rare-net\backend
-
-# Run quick_seed.py for fast seeding
-python scripts\quick_seed.py
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host ""
-    Write-Host "Seeding completed successfully!" -ForegroundColor Green
+    Write-Host "Step 8: Synchronizing Stats..." -ForegroundColor Yellow
+    python scripts\update_stats.py
+    cd ..
+    
 } else {
-    Write-Host ""
-    Write-Host "Seeding completed with some errors" -ForegroundColor Yellow
+    Write-Host "Skipping seeding (Data preserved)." -ForegroundColor Gray
 }
 
+# ---------------------------------------------------------
 # Summary
+# ---------------------------------------------------------
 Write-Host ""
-Write-Host $separator -ForegroundColor Gray
-Write-Host "RareNet is ready!" -ForegroundColor Green
-Write-Host $separator -ForegroundColor Gray
+Write-Host ("=" * 60) -ForegroundColor Gray
+Write-Host "🚀 RareNet System Ready!" -ForegroundColor Green
+Write-Host ("=" * 60) -ForegroundColor Gray
 Write-Host ""
-Write-Host "Services Running:" -ForegroundColor Cyan
-Write-Host "  CyborgDB:  http://localhost:8000" -ForegroundColor White
-Write-Host "  Backend:   http://localhost:8001" -ForegroundColor White
-Write-Host "  API Docs:  http://localhost:8001/docs" -ForegroundColor White
+Write-Host "Services:" -ForegroundColor Cyan
+Write-Host "  Frontend:  http://localhost:5173  (run 'npm run dev' if not started)"
+Write-Host "  Backend:   http://localhost:8001"
+Write-Host "  CyborgDB:  http://localhost:8000"
 Write-Host ""
-Write-Host "Next Steps:" -ForegroundColor Cyan
-Write-Host "  1. Start the frontend: cd frontend; npm run dev" -ForegroundColor White
-Write-Host "  2. Test privacy features at http://localhost:5173" -ForegroundColor White
-Write-Host "  3. Try searching for symptoms to see K-anonymity in action" -ForegroundColor White
+Write-Host "Encryption Key:" -ForegroundColor Cyan
+Write-Host "  $($env:CYBORGDB_ENCRYPTION_KEY.Substring(0, 8))... (Matched & Loaded)"
 Write-Host ""
-Write-Host "To stop services:" -ForegroundColor Cyan
-Write-Host "  Close the backend window" -ForegroundColor White
-Write-Host "  Run: docker-compose down" -ForegroundColor White
+Write-Host "Demo Instructions:" -ForegroundColor Cyan
+Write-Host "1. Open Frontend"
+Write-Host "2. Search 'joint hypermobility' -> SUCCESS"
+Write-Host "3. Search 'progressive muscle rigidity' -> BLOCKED (Privacy Demo)"
 Write-Host ""
