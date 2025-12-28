@@ -263,11 +263,12 @@ class PrivacyAggregator:
         # Laplace noise with scale = sensitivity / epsilon
         # Sensitivity for a score in [0,1] is at most 1
         scale = 1.0 / epsilon
-        noise = np.random.laplace(0, scale * 0.05)  # Scaled down for usability
+        noise = np.random.laplace(0, scale * 0.02)  # Reduced scaling for better utility
         
         # Add noise and clamp to valid range
         noisy_score = score + noise
-        noisy_score = max(0.0, min(1.0, noisy_score))
+        # Ensure at least 1% confidence if the result is valid
+        noisy_score = max(0.01, min(1.0, noisy_score))
         
         # Track metrics
         self.noise_added_count += 1
