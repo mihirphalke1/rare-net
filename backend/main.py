@@ -20,6 +20,11 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from app.models import (
     Patient, 
     SearchRequest, 
