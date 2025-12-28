@@ -50,7 +50,7 @@ class CyborgService:
             self.client = None
             self.connected = False
             
-        self.institutions = ["mumbai", "boston", "london"]
+        self.institutions = ["mumbai", "boston", "london", "tokyo", "singapore", "toronto", "sao_paulo", "berlin"]
         self.demo_key = get_encryption_key()
 
     def _ensure_connection(self):

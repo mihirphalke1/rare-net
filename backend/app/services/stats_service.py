@@ -31,7 +31,7 @@ def _load_stats() -> Dict:
     if not STATS_FILE.exists():
         return {
             "total_cases": 0,
-            "cases_by_hospital": {"mumbai": 0, "boston": 0, "london": 0},
+            "cases_by_hospital": {"mumbai": 0, "boston": 0, "london": 0, "tokyo": 0, "singapore": 0, "toronto": 0, "sao_paulo": 0, "berlin": 0},
             "cases_by_disease": {},
             "contributions_today": 0,
             "last_contribution": None,
@@ -44,7 +44,7 @@ def _load_stats() -> Dict:
     except (json.JSONDecodeError, IOError):
         return {
             "total_cases": 0,
-            "cases_by_hospital": {"mumbai": 0, "boston": 0, "london": 0},
+            "cases_by_hospital": {"mumbai": 0, "boston": 0, "london": 0, "tokyo": 0, "singapore": 0, "toronto": 0, "sao_paulo": 0, "berlin": 0},
             "cases_by_disease": {},
             "contributions_today": 0,
             "last_contribution": None,
@@ -98,7 +98,7 @@ def increment_case_count(hospital: str, disease: str) -> Dict:
         
         # Increment hospital count
         if "cases_by_hospital" not in stats:
-            stats["cases_by_hospital"] = {"mumbai": 0, "boston": 0, "london": 0}
+            stats["cases_by_hospital"] = {"mumbai": 0, "boston": 0, "london": 0, "tokyo": 0, "singapore": 0, "toronto": 0, "sao_paulo": 0, "berlin": 0}
         stats["cases_by_hospital"][hospital] = stats["cases_by_hospital"].get(hospital, 0) + 1
         
         # Increment disease count

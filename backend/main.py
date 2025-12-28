@@ -30,6 +30,7 @@ from app.models import (
 from app.services.cyborg_service import cyborg_service
 from app.services.privacy_aggregator import privacy_aggregator
 from app.services.stats_service import stats_service
+from app.services.analytics_service import track_search, get_analytics
 from app.rare_diseases import RARE_DISEASES, get_all_symptoms, get_all_diseases, validate_symptoms
 
 # Import authentication
@@ -263,6 +264,16 @@ def diagnose(
         
         search_time = (time.time() - start_time) * 1000
         
+        # Track analytics if successful
+        if insight_dict.get("privacy_status") == "PASSED":
+            try:
+                track_search(
+                    insight_dict.get("suggested_diagnosis", "Unknown"),
+                    insight_dict.get("confidence_score", 0.0)
+                )
+            except Exception as e:
+                logger.warning(f"Failed to track analytics: {e}")
+        
         # Build response models
         insight = DiagnosticInsight(**insight_dict)
         audit = PrivacyAuditLog(**audit_dict)
@@ -453,9 +464,9 @@ def initialize_network(
     
     **Admin Only**
     
-    Creates CyborgDB indexes for Mumbai, Boston, and London hospital nodes.
+    Creates CyborgDB indexes for all 8 hospital nodes.
     """
-    institutions = ["mumbai", "boston", "london"]
+    institutions = ["mumbai", "boston", "london", "tokyo", "singapore", "toronto", "sao_paulo", "berlin"]
     results = []
     
     for inst in institutions:
@@ -613,6 +624,7 @@ def get_privacy_config():
         "k_anonymity_threshold": privacy_aggregator.PRIVACY_THRESHOLD,
         "differential_privacy_epsilon": privacy_aggregator.EPSILON,
         "top_k_per_node": privacy_aggregator.TOP_K_PER_NODE,
+        "metrics": privacy_aggregator.get_privacy_metrics(),
         "encryption": {
             "at_rest": "CyborgDB encrypted vector storage",
             "in_transit": "HTTPS/TLS",
@@ -636,3 +648,19 @@ def get_privacy_config():
             "Doctors can only write to their own hospital's index"
         ]
     }
+
+
+@app.get("/api/privacy/metrics")
+def get_privacy_metrics(current_user: User = Depends(get_current_active_user)):
+    """Get real-time privacy protection metrics for dashboard visualization."""
+    return privacy_aggregator.get_privacy_metrics()
+
+
+@app.get("/api/analytics")
+def get_analytics_data(current_user: User = Depends(get_current_active_user)):
+    """Get analytics dashboard data."""
+    analytics = get_analytics()
+    # Merge with privacy metrics
+    privacy_metrics = privacy_aggregator.get_privacy_metrics()
+    analytics["privacy_blocks"] = privacy_metrics.get("queries_blocked_today", 0)
+    return analytics

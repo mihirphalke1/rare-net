@@ -32,7 +32,7 @@ class User(UserBase):
     """User model returned to clients (no password)."""
     id: str
     is_active: bool = True
-    created_at: Optional[str] = None  # Store as ISO string for JSON compatibility
+    created_at: Optional[Union[str, datetime]] = None  # Accept both string and datetime
     
     model_config = {"from_attributes": True}
         

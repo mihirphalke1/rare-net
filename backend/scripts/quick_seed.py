@@ -1,35 +1,58 @@
 """Quick seed script - minimal dependencies"""
+# -*- coding: utf-8 -*-
 import requests
 import json
+import random
+import sys
 
-# Login as admin to get token
-login_response = requests.post(
-    "http://localhost:8001/auth/login",
-    json={
-        "email": "doctor@mumbai.hospital",
-        "password": "password123"
-    }
-)
-print(f"Login response: {login_response.status_code}")
-if login_response.status_code != 200:
-    print(f"Login failed: {login_response.text}")
+# Set UTF-8 encoding for Windows console
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+# Rotate through all 8 hospitals
+hospitals = ["mumbai", "boston", "london", "tokyo", "singapore", "toronto", "sao_paulo", "berlin"]
+hospital_tokens = {}
+
+# Login to all 8 hospitals to get tokens
+print("Logging in to all 8 hospitals...")
+for hospital in hospitals:
+    try:
+        login_response = requests.post(
+            "http://localhost:8001/auth/login",
+            json={
+                "email": f"doctor@{hospital if hospital != 'sao_paulo' else 'saopaulo'}.hospital",
+                "password": "password123"
+            }
+        )
+        if login_response.status_code == 200:
+            hospital_tokens[hospital] = login_response.json()["access_token"]
+            print(f"[OK] {hospital.capitalize()}")
+        else:
+            print(f"[FAIL] {hospital.capitalize()}: {login_response.status_code}")
+    except Exception as e:
+        print(f"[ERROR] {hospital.capitalize()}: {str(e)[:50]}")
+
+if not hospital_tokens:
+    print("Failed to login to any hospital!")
     exit(1)
-token = login_response.json()["access_token"]
-headers = {"Authorization": f"Bearer {token}"}
 
-print("Logged in successfully!")
+print(f"\nSuccessfully logged into {len(hospital_tokens)} hospitals!")
 
-# Initialize hospital indexes first
+# Use first available token to initialize all indexes
+first_token = list(hospital_tokens.values())[0]
+headers = {"Authorization": f"Bearer {first_token}"}
+
 print("\nInitializing hospital indexes...")
 try:
     init_response = requests.post("http://localhost:8001/api/init", headers=headers)
     if init_response.status_code == 200:
-        print("✓ Indexes initialized")
+        print("[OK] All 8 hospital indexes initialized")
     else:
-        print(f"⚠ Init returned {init_response.status_code}: {init_response.text[:100]}")
+        print(f"[WARN] Init returned {init_response.status_code}: {init_response.text[:100]}")
         print("  Continuing anyway (indexes may already exist)...")
 except Exception as e:
-    print(f"⚠ Init error: {str(e)[:100]}")
+    print(f"[WARN] Init error: {str(e)[:100]}")
     print("  Continuing anyway...")
 
 # Sample patients with common symptoms
@@ -62,11 +85,17 @@ patients = [
     {"diagnosis": "Marfan Syndrome", "symptoms": "tall thin build, long fingers and toes, aortic complications, vision problems", "age": 35, "sex": "F"},
 ]
 
-print(f"\nSeeding {len(patients)} cases...")
+print(f"\nSeeding {len(patients)} cases across all hospitals...")
 success_count = 0
 error_count = 0
 
+# Distribute cases across all hospitals
 for i, patient_data in enumerate(patients, 1):
+    # Round-robin distribution across hospitals
+    hospital = list(hospital_tokens.keys())[i % len(hospital_tokens)]
+    token = hospital_tokens[hospital]
+    headers = {"Authorization": f"Bearer {token}"}
+    
     # Map age to age range
     age = patient_data["age"]
     if age <= 18:
@@ -93,15 +122,16 @@ for i, patient_data in enumerate(patients, 1):
         )
         if response.status_code == 200:
             success_count += 1
-            disease_short = patient_data['diagnosis'][:35]
-            print(f"✓ Case {i}/{len(patients)}: {disease_short}")
+            disease_short = patient_data['diagnosis'][:25]
+            hospital_short = hospital[:8]
+            print(f"[OK] Case {i}/{len(patients)}: {disease_short} -> {hospital_short}")
         else:
             error_count += 1
-            print(f"✗ Case {i}/{len(patients)}: HTTP {response.status_code}")
+            print(f"[FAIL] Case {i}/{len(patients)}: HTTP {response.status_code}")
             print(f"   {response.text[:150]}")
     except Exception as e:
         error_count += 1
-        print(f"✗ Case {i}/{len(patients)}: {str(e)[:100]}")
+        print(f"[ERROR] Case {i}/{len(patients)}: {str(e)[:100]}")
 
 print(f"\n{'='*50}")
 print(f"Seeding complete!")

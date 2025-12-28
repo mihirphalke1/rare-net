@@ -1,0 +1,36 @@
+{
+  "total_searches": 5,
+  "searches_today": 5,
+  "total_confidence_sum": 3.0,
+  "disease_counts": {
+    "Ehlers-Danlos Syndrome (Vascular Type)": 4,
+    "Ehlers-Danlos Syndrome": 1
+  },
+  "hourly_searches": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "last_reset": "2025-12-28"
+}

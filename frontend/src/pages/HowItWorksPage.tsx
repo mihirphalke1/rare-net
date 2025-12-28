@@ -338,7 +338,7 @@ export function HowItWorksPage() {
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-2xl px-8 py-3.5 flex items-center justify-between shadow-lg shadow-slate-900/5">
-            <Link to="/" className="flex items-center gap-2.5">
+            <Link to="/" className="flex items-center gap-2.5" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Logo size={32} />
               <span className="text-lg font-bold text-slate-900 tracking-tight">
                 RareNet
@@ -346,8 +346,11 @@ export function HowItWorksPage() {
             </Link>
             
             <div className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                Home
+              <Link to="/#features" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+                Features
+              </Link>
+              <Link to="/#network" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+                Network
               </Link>
               <span className="text-sm font-medium text-sky-600">
                 How It Works
@@ -357,15 +360,9 @@ export function HowItWorksPage() {
             <div className="flex items-center gap-3">
               <Link
                 to="/login"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/login"
                 className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 transition-all"
               >
-                Get Started
+                Sign In
               </Link>
             </div>
           </div>

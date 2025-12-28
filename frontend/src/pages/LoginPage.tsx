@@ -16,10 +16,15 @@ import { Logo } from '../components/Logo';
 
 // Demo credentials for quick access
 const DEMO_ACCOUNTS = [
-  { email: 'doctor@mumbai.hospital', password: 'password123', hospital: 'Mumbai', role: 'Doctor' },
-  { email: 'doctor@boston.hospital', password: 'password123', hospital: 'Boston', role: 'Doctor' },
-  { email: 'doctor@london.hospital', password: 'password123', hospital: 'London', role: 'Doctor' },
-  { email: 'admin@rarenet.org', password: 'admin123', hospital: 'Global', role: 'Admin' },
+  { email: 'doctor@mumbai.hospital', password: 'password123', hospital: 'Mumbai', role: 'Doctor', flag: '🇮🇳' },
+  { email: 'doctor@boston.hospital', password: 'password123', hospital: 'Boston', role: 'Doctor', flag: '🇺🇸' },
+  { email: 'doctor@london.hospital', password: 'password123', hospital: 'London', role: 'Doctor', flag: '🇬🇧' },
+  { email: 'doctor@tokyo.hospital', password: 'password123', hospital: 'Tokyo', role: 'Doctor', flag: '🇯🇵' },
+  { email: 'doctor@singapore.hospital', password: 'password123', hospital: 'Singapore', role: 'Doctor', flag: '🇸🇬' },
+  { email: 'doctor@toronto.hospital', password: 'password123', hospital: 'Toronto', role: 'Doctor', flag: '🇨🇦' },
+  { email: 'doctor@saopaulo.hospital', password: 'password123', hospital: 'São Paulo', role: 'Doctor', flag: '🇧🇷' },
+  { email: 'doctor@berlin.hospital', password: 'password123', hospital: 'Berlin', role: 'Doctor', flag: '🇩🇪' },
+  { email: 'admin@rarenet.org', password: 'admin123', hospital: 'Global', role: 'Admin', flag: '🌐' },
 ];
 
 export function LoginPage() {
@@ -171,9 +176,9 @@ export function LoginPage() {
         {/* Demo Accounts */}
         <div className="mt-6">
           <p className="text-sm text-slate-500 text-center mb-3">
-            Quick Demo Login:
+            Quick Demo Login - All 8 Hospitals:
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {DEMO_ACCOUNTS.map((account) => (
               <button
                 key={account.email}
@@ -182,7 +187,7 @@ export function LoginPage() {
                 className="group p-3 rounded-xl bg-white/50 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/50 transition-all text-left disabled:opacity-50"
               >
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-slate-400 group-hover:text-sky-500" />
+                  <span className="text-lg">{account.flag}</span>
                   <span className="text-sm font-medium text-slate-700">{account.hospital}</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{account.role}</p>

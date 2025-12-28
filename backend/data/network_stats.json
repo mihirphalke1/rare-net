@@ -1,9 +1,14 @@
 {
   "total_cases": 146,
   "cases_by_hospital": {
-    "mumbai": 50,
-    "boston": 49,
-    "london": 47
+    "mumbai": 20,
+    "tokyo": 18,
+    "singapore": 17,
+    "boston": 21,
+    "toronto": 17,
+    "sao_paulo": 17,
+    "london": 19,
+    "berlin": 17
   },
   "cases_by_disease": {
     "Ehlers-Danlos Syndrome": 45,
@@ -14,5 +19,5 @@
   },
   "contributions_today": 0,
   "last_contribution": null,
-  "last_updated": "2025-12-27T00:00:00.000000"
+  "last_updated": "2025-12-28T13:37:54.602389"
 }

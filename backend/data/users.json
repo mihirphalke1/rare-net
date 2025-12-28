@@ -1,42 +1,92 @@
 [
   {
-    "id": "c7c999a8-3c11-4b83-a7cb-e1e63c975f11",
+    "id": "41f654a8-8475-437c-81a5-01e6fd6ce514",
     "email": "doctor@mumbai.hospital",
-    "hashed_password": "$2b$12$IsKwYxCALjXs07/qRqjrfu0FMQ42RFtJY8w2mV8qK7gcBjk0YeTEe",
+    "hashed_password": "$2b$12$nOefyUlAchI7gPOP6FOymOZir8K3AEtrQB/R5.hDQXU31TPQzeYOq",
     "role": "doctor",
     "hospital": "mumbai",
     "full_name": "Dr. Priya Sharma",
     "is_active": true,
-    "created_at": "2025-12-20T10:39:39.930278"
+    "created_at": "2025-12-28T05:18:09.047635"
   },
   {
-    "id": "7489a3c2-dfca-4cad-8a54-06cc3852ed17",
+    "id": "6bc96a12-9b9e-4b59-8dca-73b46c1b5eb5",
     "email": "doctor@boston.hospital",
-    "hashed_password": "$2b$12$I6NW0whLR8HigiMwFhroB.rjZzVlZ.kGyLmDmsovRsk6tGdG6GpXW",
+    "hashed_password": "$2b$12$PH8GOyUmv6EalLvkSvMa3eykrM9yxf.Uv2zivEGy3.fDpVpo.r0He",
     "role": "doctor",
     "hospital": "boston",
     "full_name": "Dr. James Wilson",
     "is_active": true,
-    "created_at": "2025-12-20T10:39:40.472520"
+    "created_at": "2025-12-28T05:18:09.311492"
   },
   {
-    "id": "afd84cbd-f63d-4ce9-af3b-1e40bd50237e",
+    "id": "3b8a2d9e-d90c-408c-8eb9-e744133a61fe",
     "email": "doctor@london.hospital",
-    "hashed_password": "$2b$12$rnjTYjrgSeOE/Q6vdxZeC.oauivfqNH.to5FjxnX1B.iDP6PuXmI2",
+    "hashed_password": "$2b$12$UwaVemVpBHbem0RtGha.nOrU9i3HzhmWcmOyS6WGeZJTtsQ2hAJRe",
     "role": "doctor",
     "hospital": "london",
     "full_name": "Dr. Sarah Chen",
     "is_active": true,
-    "created_at": "2025-12-20T10:39:41.014334"
+    "created_at": "2025-12-28T05:18:09.574370"
   },
   {
-    "id": "5f280c55-a744-4f8b-b5c5-26645f9616d7",
+    "id": "2373c93b-cdb7-40b1-bb98-7effe1b889d1",
+    "email": "doctor@tokyo.hospital",
+    "hashed_password": "$2b$12$j8.4Gk4Me.fapRS48PNnX.STTqcSHywkfhTSqGNuBa3MPfVahO7L.",
+    "role": "doctor",
+    "hospital": "tokyo",
+    "full_name": "Dr. Yuki Tanaka",
+    "is_active": true,
+    "created_at": "2025-12-28T05:18:09.859608"
+  },
+  {
+    "id": "a932bf36-e86b-4469-a572-f84105624368",
+    "email": "doctor@singapore.hospital",
+    "hashed_password": "$2b$12$R69qm1OcVfAENNlzubnrj.CMuHU1zfk4JL9T0gqQpUDm8LBP9TMP2",
+    "role": "doctor",
+    "hospital": "singapore",
+    "full_name": "Dr. Wei Lin",
+    "is_active": true,
+    "created_at": "2025-12-28T05:18:10.125411"
+  },
+  {
+    "id": "0198a827-7e44-4b32-9f94-24cb22ada2ab",
+    "email": "doctor@toronto.hospital",
+    "hashed_password": "$2b$12$EpN0tWFtcaQ.dgBrC7OJZuiAQ0XRzBXYvyy9KA2bkxf69pe/1ji0i",
+    "role": "doctor",
+    "hospital": "toronto",
+    "full_name": "Dr. Emily Rodriguez",
+    "is_active": true,
+    "created_at": "2025-12-28T05:18:10.394671"
+  },
+  {
+    "id": "c3137844-262b-4e68-9582-353b2ece4081",
+    "email": "doctor@saopaulo.hospital",
+    "hashed_password": "$2b$12$9xBaoKHMYl.nCCrKFxeWc.Xw3q/cn66W6S/HQZcithO25TzdH9Q7K",
+    "role": "doctor",
+    "hospital": "sao_paulo",
+    "full_name": "Dr. Carlos Silva",
+    "is_active": true,
+    "created_at": "2025-12-28T05:18:10.663190"
+  },
+  {
+    "id": "a0824e9b-5f82-45eb-866e-09440374e12d",
+    "email": "doctor@berlin.hospital",
+    "hashed_password": "$2b$12$KenI.VFsQHZQu351h2Sf/.bqEvmjNG1g8RDNT8lYr7mR.61V0pDwy",
+    "role": "doctor",
+    "hospital": "berlin",
+    "full_name": "Dr. Anna Schmidt",
+    "is_active": true,
+    "created_at": "2025-12-28T05:18:10.924855"
+  },
+  {
+    "id": "60843e7a-37ee-43bf-a33f-16a68cab012b",
     "email": "admin@rarenet.org",
-    "hashed_password": "$2b$12$9xz0Z0sCi15SQPGVNUZny.Ij3VoC8sZkpQNxTze6hOLVCE/hWfrey",
+    "hashed_password": "$2b$12$3yBRRHGfOOdaF5KhA7V0HO/FFHQ64WaRXjtZ2wmNc7.eduAY/KyQy",
     "role": "admin",
     "hospital": null,
     "full_name": "RareNet Administrator",
     "is_active": true,
-    "created_at": "2025-12-20T10:39:41.567396"
+    "created_at": "2025-12-28T05:18:11.184792"
   }
 ]

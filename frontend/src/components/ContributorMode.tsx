@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, getAuthHeader } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { CaseSuccessAnimation } from './CaseSuccessAnimation';
 import {
   Upload,
   Shield,
@@ -150,6 +151,18 @@ export function ContributorMode() {
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
+      {/* Success Animation */}
+      <AnimatePresence>
+        {success && (
+          <CaseSuccessAnimation
+            caseId={success.caseId}
+            hospitalName={user?.hospital || 'Your Hospital'}
+            totalNetworkCases={success.stats.total_cases}
+            onComplete={() => setSuccess(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Main Form */}
       <div className="lg:col-span-2 space-y-6">
         {/* Header */}

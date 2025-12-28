@@ -2,14 +2,14 @@
 JWT Handler for RareNet
 
 Provides functions to create and verify JWT tokens.
-Uses python-jose for JWT operations and passlib for password hashing.
+Uses python-jose for JWT operations and bcrypt directly for password hashing.
 """
 
 import os
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,12 +26,9 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 REFRESH_TOKEN_EXPIRE_DAYS = 7  # 7 days
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 # ============================================
-# Password Utilities
+# Password Utilities (Direct bcrypt - Python 3.13 compatible)
 # ============================================
 
 def hash_password(password: str) -> str:
@@ -44,7 +41,11 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string
     """
-    return pwd_context.hash(password)
+    # Encode password to bytes, truncate to 72 bytes (bcrypt limit)
+    password_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -58,7 +59,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        # Encode password to bytes, truncate to 72 bytes (bcrypt limit)
+        password_bytes = plain_password.encode('utf-8')[:72]
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
+    except Exception as e:
+        # If verification fails for any reason, return False (don't crash auth)
+        print(f"Password verification error: {e}")
+        return False
 
 
 # ============================================

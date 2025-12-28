@@ -12,6 +12,7 @@ import { DiagnosticInsight } from './components/DiagnosticInsight';
 import { NetworkStatus } from './components/NetworkStatus';
 import { ContributorMode } from './components/ContributorMode';
 import { MyCases } from './components/MyCases';
+import { PrivacyVisualizer } from './components/PrivacyVisualizer';
 import { 
   Shield,
   Search,
@@ -88,24 +89,21 @@ function AppHeader({ activeTab }: { activeTab: TabType }) {
 
   return (
     <header className="sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5 flex items-center justify-between gap-6">
           {/* Logo */}
-          <Link to="/search" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link to="/search" className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0">
             <Logo size={32} />
             <span className="text-lg font-bold text-slate-900 tracking-tight">
               RareNet
             </span>
           </Link>
-          <div className="flex items-center gap-3">
-            <NetworkStatus status={networkStatus} />
-          </div>
 
           {/* Tabs */}
           <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-1">
             <button
               onClick={() => navigate('/search')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'diagnose'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
@@ -138,8 +136,10 @@ function AppHeader({ activeTab }: { activeTab: TabType }) {
             </button>
           </div>
 
-          {/* User */}
-          <div className="flex items-center gap-3">
+          {/* Right side - Network + User */}
+          <div className="flex items-center gap-3 shrink-0">
+            <NetworkStatus status={networkStatus} />
+            
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100">
               <User className="w-4 h-4 text-slate-400" />
               <span className="text-sm text-slate-600">{user?.email?.split('@')[0]}</span>
@@ -231,23 +231,59 @@ function SearchPage() {
   const [searchStep, setSearchStep] = useState<string>('');
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [networkStats, setNetworkStats] = useState<NetworkStats | null>(null);
+  const [privacyMetrics, setPrivacyMetrics] = useState<any>(null);
 
   // Fetch network stats
   useEffect(() => {
+    if (!token) {
+      console.log('⏳ Waiting for token...');
+      return; // Wait for token to be available
+    }
+    
+    console.log('🔄 Fetching network stats with token:', token?.substring(0, 20) + '...');
+    
     const fetchStats = async () => {
       try {
         const response = await fetch(`${API_URL}/api/stats`, {
           headers: getAuthHeader(token)
         });
+        console.log('📊 Stats response status:', response.status);
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ Network stats loaded:', data);
           setNetworkStats(data);
+        } else {
+          const errorText = await response.text();
+          console.error('❌ Stats fetch failed:', response.status, errorText);
         }
       } catch (err) {
-        console.error('Failed to fetch stats:', err);
+        console.error('❌ Failed to fetch stats:', err);
       }
     };
     fetchStats();
+  }, [token]);
+
+  // Fetch privacy metrics
+  useEffect(() => {
+    if (!token) return; // Wait for token to be available
+    
+    const fetchPrivacyMetrics = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/privacy/metrics`, {
+          headers: getAuthHeader(token)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setPrivacyMetrics(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch privacy metrics:', err);
+      }
+    };
+    fetchPrivacyMetrics();
+    // Refresh every 10 seconds
+    const interval = setInterval(fetchPrivacyMetrics, 10000);
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleSearch = async (query: string) => {
@@ -451,7 +487,9 @@ function SearchPage() {
                 className="p-5 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white"
               >
                 <Database className="w-6 h-6 mb-2 opacity-80" />
-                <div className="text-3xl font-bold">{networkStats?.total_cases || '-'}</div>
+                <div className="text-3xl font-bold">
+                  {networkStats?.total_cases ?? '-'}
+                </div>
                 <div className="text-sm opacity-80">Total Network Cases</div>
               </motion.div>
 
@@ -463,7 +501,7 @@ function SearchPage() {
               >
                 <Building2 className="w-6 h-6 mb-2 text-slate-400" />
                 <div className="text-3xl font-bold text-slate-900">
-                  {networkStats?.hospital_count || '-'}
+                  {networkStats?.hospital_count ?? '-'}
                 </div>
                 <div className="text-sm text-slate-500">Connected Hospitals</div>
               </motion.div>
@@ -475,7 +513,9 @@ function SearchPage() {
                 className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"
               >
                 <Activity className="w-6 h-6 mb-2 text-slate-400" />
-                <div className="text-3xl font-bold text-slate-900">{networkStats?.diseases_tracked || '-'}</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {networkStats?.diseases_tracked ?? '-'}
+                </div>
                 <div className="text-sm text-slate-500">Diseases Tracked</div>
               </motion.div>
 
@@ -490,6 +530,17 @@ function SearchPage() {
                 <div className="text-sm text-slate-500">Privacy Protected</div>
               </motion.div>
             </div>
+
+            {/* Privacy Protection Visualizer */}
+            {privacyMetrics && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <PrivacyVisualizer metrics={privacyMetrics} />
+              </motion.div>
+            )}
 
             {/* Privacy Notice */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">

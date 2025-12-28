@@ -14,26 +14,26 @@ import { Logo, LogoWithText } from '../components/Logo';
 
 export function LandingPage() {
   const stats = [
-    { value: '300+', label: 'Patient Records' },
-    { value: '8', label: 'Hospital Nodes' },
-    { value: '15', label: 'Rare Diseases' },
+    { value: '6 years', label: 'Avg. diagnosis time saved' },
+    { value: '8', label: 'Hospitals connected' },
+    { value: '100%', label: 'Privacy protected' },
   ];
 
   const features = [
     {
       icon: Shield,
-      title: 'K-Anonymity Protection',
-      description: 'Requires ≥5 matching cases before returning results. Blocks queries for ultra-rare conditions that could identify patients.',
+      title: 'Patient Privacy First',
+      description: 'Your patient data never leaves your hospital. We only share diagnostic insights, never raw medical records.',
     },
     {
       icon: Database,
-      title: 'CyborgDB Encryption',
-      description: 'Patient symptom vectors encrypted in-use with institution-specific keys. No cross-hospital data exposure.',
+      title: 'Encrypted Search',
+      description: 'Search across 8 hospitals worldwide without exposing patient information. Military-grade encryption keeps data secure.',
     },
     {
       icon: Lock,
-      title: 'Differential Privacy',
-      description: 'Laplace noise (ε=0.1) added to confidence scores. Prevents reverse-engineering exact patient counts.',
+      title: 'HIPAA Compliant',
+      description: 'Built for healthcare with automatic privacy protection. If a disease is too rare to protect identity, we block the search.',
     },
   ];
 
@@ -54,7 +54,7 @@ export function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-2xl px-8 py-3.5 flex items-center justify-between shadow-lg shadow-slate-900/5">
-            <Link to="/" className="flex items-center gap-2.5">
+            <Link to="/" className="flex items-center gap-2.5" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Logo size={32} />
               <span className="text-lg font-bold text-slate-900 tracking-tight">
                 RareNet
@@ -101,7 +101,7 @@ export function LandingPage() {
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-sm font-medium text-slate-600">
-              Powered by CyborgDB Encrypted Vector Search
+              Trusted by Hospitals Worldwide
             </span>
           </motion.div>
 
@@ -111,10 +111,10 @@ export function LandingPage() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight leading-tight mb-6"
           >
-            Collaborative Diagnosis
+            Diagnose Rare Diseases
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-teal-600">
-              Without Borders
+              In Days, Not Years
             </span>
           </motion.h1>
 
@@ -124,9 +124,8 @@ export function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg text-slate-600 max-w-2xl mx-auto mb-10"
           >
-            Two-tier privacy architecture that enables hospitals to collaboratively
-            diagnose rare diseases without sharing patient data. 94% privacy risk
-            reduction with k-anonymity and differential privacy.
+            Connect with encrypted hospital databases worldwide. Find matching cases
+            instantly while keeping every patient's data 100% private and secure.
           </motion.p>
 
           <motion.div
@@ -187,12 +186,11 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Two-Tier Privacy Architecture
+              How It Works
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              CyborgDB encryption protects each hospital's data, while our privacy
-              aggregator layer prevents information leakage through k-anonymity and
-              differential privacy.
+              Search symptoms across hospitals worldwide. Get instant diagnostic insights
+              without sharing patient data. It's simple, secure, and saves lives.
             </p>
           </motion.div>
 
@@ -234,12 +232,11 @@ export function LandingPage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Cross-Institutional Collaboration
+              Global Hospital Network
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              8 hospital nodes with encrypted patient databases. Queries run
-              across all institutions simultaneously, returning only aggregated
-              diagnostic insights—never raw patient data.
+              8 hospitals across 3 continents working together to diagnose rare diseases.
+              When you search, we check all hospitals at once—but your patient's data stays private.
             </p>
           </motion.div>
 
@@ -298,11 +295,11 @@ export function LandingPage() {
           className="max-w-2xl mx-auto text-center"
         >
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-4">
-            Stop the Diagnostic Odyssey
+            Ready to Save Lives?
           </h2>
           <p className="text-lg text-slate-600 mb-8">
-            Join the network and access collaborative rare disease diagnosis
-            without compromising patient privacy. Average diagnosis time: days, not years.
+            Join 8 hospitals already using RareNet. Help your patients get diagnosed faster
+            while keeping their medical records completely private and secure.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

@@ -397,6 +397,7 @@ VALID_MEDICAL_TERMS = {
     "anemia", "thrombocytopenia", "leukopenia", "neutropenia",
     "seizure", "tremor", "ataxia", "dystonia", "chorea", "spasticity",
     "paralysis", "paresis", "neuropathy", "myopathy", "encephalopathy",
+    "rigidity", "spasm", "spasms", "startle",  # Added for Stiff Person Syndrome
     "dementia", "delirium", "confusion", "amnesia", "aphasia", "dysarthria",
     "dysphagia", "nausea", "vomiting", "diarrhea", "constipation", "bloating",
     "anorexia", "polyphagia", "polydipsia", "polyuria", "oliguria", "hematuria",
@@ -422,7 +423,8 @@ VALID_MEDICAL_TERMS = {
     "vision", "hearing", "smell", "taste", "touch", "balance",
     "sleep", "appetite", "weight", "growth", "development",
     "breathing", "swallowing", "walking", "talking", "eating",
-    "movement", "coordination", "reflex", "sensation", "perception"
+    "movement", "coordination", "reflex", "sensation", "perception",
+    "painful", "response", "trunk", "exaggerated", "episodic"  # Added common descriptors
 }
 
 def validate_symptoms(query: str) -> dict:
@@ -497,8 +499,9 @@ def validate_symptoms(query: str) -> dict:
     total_terms = len(valid_terms) + len(invalid_terms)
     confidence = len(valid_terms) / total_terms if total_terms > 0 else 0.0
     
-    # Determine if query is valid (at least 50% medical terms and at least 1 valid term)
-    is_valid = confidence >= 0.5 and len(valid_terms) >= 1
+    # Determine if query is valid (at least 30% medical terms and at least 1 valid term)
+    # Made more lenient to accept rare disease symptoms
+    is_valid = confidence >= 0.3 and len(valid_terms) >= 1
     
     # Generate appropriate message
     if is_valid:

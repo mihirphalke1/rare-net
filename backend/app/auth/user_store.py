@@ -61,6 +61,12 @@ def get_user_by_email(email: str) -> Optional[UserInDB]:
     
     for user_data in users:
         if user_data.get("email", "").lower() == email.lower():
+            # Parse datetime string if present
+            if "created_at" in user_data and isinstance(user_data["created_at"], str):
+                try:
+                    user_data["created_at"] = datetime.fromisoformat(user_data["created_at"])
+                except:
+                    pass
             return UserInDB(**user_data)
     
     return None
@@ -80,6 +86,12 @@ def get_user_by_id(user_id: str) -> Optional[UserInDB]:
     
     for user_data in users:
         if user_data.get("id") == user_id:
+            # Parse datetime string if present
+            if "created_at" in user_data and isinstance(user_data["created_at"], str):
+                try:
+                    user_data["created_at"] = datetime.fromisoformat(user_data["created_at"])
+                except:
+                    pass
             return UserInDB(**user_data)
     
     return None
@@ -210,6 +222,41 @@ def seed_demo_users():
             role="doctor",
             hospital="london",
             full_name="Dr. Sarah Chen"
+        ),
+        UserCreate(
+            email="doctor@tokyo.hospital",
+            password="password123",
+            role="doctor",
+            hospital="tokyo",
+            full_name="Dr. Yuki Tanaka"
+        ),
+        UserCreate(
+            email="doctor@singapore.hospital",
+            password="password123",
+            role="doctor",
+            hospital="singapore",
+            full_name="Dr. Wei Lin"
+        ),
+        UserCreate(
+            email="doctor@toronto.hospital",
+            password="password123",
+            role="doctor",
+            hospital="toronto",
+            full_name="Dr. Emily Rodriguez"
+        ),
+        UserCreate(
+            email="doctor@saopaulo.hospital",
+            password="password123",
+            role="doctor",
+            hospital="sao_paulo",
+            full_name="Dr. Carlos Silva"
+        ),
+        UserCreate(
+            email="doctor@berlin.hospital",
+            password="password123",
+            role="doctor",
+            hospital="berlin",
+            full_name="Dr. Anna Schmidt"
         ),
         UserCreate(
             email="admin@rarenet.org",
