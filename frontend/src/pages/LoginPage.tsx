@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Mail, 
-  Lock, 
-  LogIn, 
-  AlertCircle, 
-  Building2,
+import {
+  Mail,
+  Lock,
+  LogIn,
+  AlertCircle,
   Shield,
   Loader2,
   ArrowLeft
