@@ -33,13 +33,13 @@ This architecture directly implements the design suggested by Charlcye Munyao (C
 │                                                                   │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
 │  │ K-Anonymity  │  │ Aggregation  │  │ Differential │          │
-│  │   (K >= 5)   │  │   (Voting)   │  │Privacy (ε=0.1)│         │
+│  │   (K >= 5)   │  │   (Voting)   │  │Privacy (e=0.1)│         │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 │                                                                   │
 │  Privacy Guarantees:                                             │
-│  ✓ No hospital identities revealed                              │
-│  ✓ Minimum cohort size enforced                                 │
-│  ✓ Only aggregated diagnosis returned                           │
+│  - No hospital identities revealed                              │
+│  - Minimum cohort size enforced                                 │
+│  - Only aggregated diagnosis returned                           │
 └────────┬──────────────────┬──────────────────┬──────────────────┘
          │                  │                  │
          │ Parallel Queries │                  │
@@ -140,12 +140,12 @@ class HospitalNode:
 
 ### Threat Model: What Tier 1 Protects Against
 
-✅ **Database breach:** Attacker gains access to CyborgDB server  
-✅ **Insider threat:** Malicious database administrator  
-✅ **Backup theft:** Stolen database backups  
-✅ **Memory dumps:** Server memory dumps  
+- **Database breach:** Attacker gains access to CyborgDB server  
+- **Insider threat:** Malicious database administrator  
+- **Backup theft:** Stolen database backups  
+- **Memory dumps:** Server memory dumps  
 
-❌ **Does NOT protect against:** Cross-institutional privacy leakage (see Tier 2)
+- **Does NOT protect against:** Cross-institutional privacy leakage (see Tier 2)
 
 ---
 
@@ -293,18 +293,18 @@ class PrivacyAggregator:
 | Guarantee | Mechanism | Example |
 |-----------|-----------|---------|
 | **K-Anonymity** | Minimum cohort size | Blocks queries with < 5 matches |
-| **Differential Privacy** | Laplace noise on confidence | 85% → 87% (prevents exact inference) |
+| **Differential Privacy** | Laplace noise on confidence | 85% -> 87% (prevents exact inference) |
 | **Aggregation** | Weighted voting | Returns diagnosis, not individual cases |
 | **Source Hiding** | No hospital identities | Cannot determine which hospital contributed |
 
 ### Threat Model: What Tier 2 Protects Against
 
-✅ **Re-identification:** Attacker cannot identify specific patients  
-✅ **Institution inference:** Cannot determine which hospital has cases  
-✅ **Cohort size inference:** Differential privacy obscures exact counts  
-✅ **Rare disease tracking:** K-anonymity blocks queries with too few matches  
+- **Re-identification:** Attacker cannot identify specific patients  
+- **Institution inference:** Cannot determine which hospital has cases  
+- **Cohort size inference:** Differential privacy obscures exact counts  
+- **Rare disease tracking:** K-anonymity blocks queries with too few matches  
 
-❌ **Does NOT protect against:** Correlation attacks with external data (future work)
+- **Does NOT protect against:** Correlation attacks with external data (future work)
 
 ---
 
@@ -357,7 +357,7 @@ class PrivacyAggregator:
 5. TIER 2: K-ANONYMITY CHECK
    - Total matches: 12 + 3 + 0 = 15
    - Threshold: 5
-   - 15 >= 5 ✅ PASS
+   - 15 >= 5  PASS
 
 6. TIER 2: AGGREGATION
    - Diagnosis votes:
@@ -429,7 +429,7 @@ results_boston = cyborg.query("rarenet_boston", query_vector)  # 3 matches
 # Only receives aggregated diagnosis
 response = privacy_aggregator.query_all_hospitals(query_vector)
 # response = {"diagnosis": "Ehlers-Danlos", "confidence": 0.87}
-# No hospital identities revealed ✅
+# No hospital identities revealed
 ```
 
 ### Alternative Architectures Considered
@@ -437,22 +437,22 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 #### Alternative 1: Federated Learning
 **Pros:** No central aggregator  
 **Cons:** Requires hospitals to run ML models locally, complex coordination  
-**Verdict:** ❌ Too complex for healthcare deployment
+**Verdict:** Too complex for healthcare deployment
 
 #### Alternative 2: Secure Multi-Party Computation (SMPC)
 **Pros:** Cryptographically secure aggregation  
 **Cons:** 10-100x slower, requires all parties online simultaneously  
-**Verdict:** ❌ Too slow for real-time diagnosis
+**Verdict:** Too slow for real-time diagnosis
 
 #### Alternative 3: Homomorphic Encryption
 **Pros:** Compute on encrypted data  
 **Cons:** 1000x slower, limited operations  
-**Verdict:** ❌ Not practical for vector search
+**Verdict:** Not practical for vector search
 
 #### Alternative 4: Trusted Aggregator (Our Choice)
 **Pros:** Fast, practical, deployable today  
 **Cons:** Requires trust in aggregator  
-**Verdict:** ✅ Best trade-off for healthcare
+**Verdict:** Best trade-off for healthcare
 
 ---
 
@@ -473,7 +473,7 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 **Defense:**
 - Tier 1: Vectors are encrypted with hospital-specific keys
 - Attacker cannot decrypt without keys
-- **Result:** ✅ Attack fails
+- **Result:** Attack fails
 
 #### Attack 2: Malicious Aggregator
 **Attacker:** Compromises privacy aggregator
@@ -489,7 +489,7 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 **Mitigation:**
 - Deploy aggregator in trusted environment
 - Audit logs for all queries
-- **Result:** ⚠️ Partial risk (future: use SMPC for aggregation)
+- **Result:** Partial risk (future: use SMPC for aggregation)
 
 #### Attack 3: Re-identification via Rare Disease
 **Attacker:** Queries for ultra-rare disease (only 1-2 cases globally)
@@ -497,7 +497,7 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 **Defense:**
 - Tier 2: K-anonymity blocks queries with < 5 matches
 - System returns: "Privacy protection active: Insufficient data"
-- **Result:** ✅ Attack fails
+- **Result:** Attack fails
 
 #### Attack 4: Correlation Attack
 **Attacker:** Combines RareNet results with external data (e.g., news articles)
@@ -509,7 +509,7 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 
 **Defense:**
 - None currently (limitation of aggregation approach)
-- **Result:** ❌ Attack succeeds (acknowledged limitation)
+- **Result:** Attack succeeds (acknowledged limitation)
 
 **Future mitigation:** Differential privacy on hospital-level statistics
 
@@ -587,21 +587,21 @@ response = privacy_aggregator.query_all_hospitals(query_vector)
 
 | Requirement | Implementation | Status |
 |-------------|----------------|--------|
-| **Encryption at Rest** | CyborgDB encryption-in-use | ✅ |
-| **Encryption in Transit** | HTTPS/TLS | ✅ |
-| **Access Controls** | JWT authentication, role-based access | ✅ |
-| **Audit Logs** | All queries logged with timestamps | ✅ |
-| **Minimum Necessary** | K-anonymity ensures only necessary data | ✅ |
-| **De-identification** | Patient IDs anonymized, no PHI in metadata | ✅ |
+| **Encryption at Rest** | CyborgDB encryption-in-use | Yes |
+| **Encryption in Transit** | HTTPS/TLS | Yes |
+| **Access Controls** | JWT authentication, role-based access | Yes |
+| **Audit Logs** | All queries logged with timestamps | Yes |
+| **Minimum Necessary** | K-anonymity ensures only necessary data | Yes |
+| **De-identification** | Patient IDs anonymized, no PHI in metadata | Yes |
 
 ### GDPR Compliance
 
 | Requirement | Implementation | Status |
 |-------------|----------------|--------|
-| **Data Minimization** | Only symptoms + diagnosis stored | ✅ |
-| **Purpose Limitation** | Data used only for diagnosis | ✅ |
-| **Right to Erasure** | Hospitals can delete patient vectors | ✅ |
-| **Data Portability** | Vectors can be exported | ✅ |
+| **Data Minimization** | Only symptoms + diagnosis stored | Yes |
+| **Purpose Limitation** | Data used only for diagnosis | Yes |
+| **Right to Erasure** | Hospitals can delete patient vectors | Yes |
+| **Data Portability** | Vectors can be exported | Yes |
 
 ---
 
@@ -630,15 +630,15 @@ Immutable audit log of all queries.
 ## Conclusion
 
 RareNet's two-tier architecture provides:
-- ✅ **Tier 1:** Hospital-local protection (CyborgDB encryption-in-use)
-- ✅ **Tier 2:** Cross-institutional privacy (k-anonymity + differential privacy)
-- ✅ **Performance:** 156ms p95 latency (production-ready)
-- ✅ **Compliance:** HIPAA and GDPR compliant
+- **Tier 1:** Hospital-local protection (CyborgDB encryption-in-use)
+- **Tier 2:** Cross-institutional privacy (k-anonymity + differential privacy)
+- **Performance:** 156ms p95 latency (production-ready)
+- **Compliance:** HIPAA and GDPR compliant
 
 **Key Innovation:** Combining CyborgDB's encryption-in-use with privacy-safe aggregation enables secure cross-institutional diagnosis for the first time.
 
 ---
 
 **Architecture Version:** 1.0  
-**Last Updated:** December 20, 2025  
+**Last Updated:** December 2025  
 **Authors:** RareNet Team

@@ -11,9 +11,7 @@
 
 ## Demo Video
 
-**[Watch Full System Demonstration](ADD_YOUTUBE_LINK_HERE)**
-
-*3-minute walkthrough covering: Two-Tier Privacy Architecture, Live Search Demo, Privacy Shield (Ghost Case), and Technical Findings*
+**[Watch Full System Demonstration](https://youtu.be/_gOSvtb1New)**
 
 ---
 
@@ -271,7 +269,7 @@ We deployed CyborgDB in a realistic multi-tenant healthcare scenario and documen
 
 - **[Setup Guide](./SETUP.md)** - Complete installation and running instructions
 - **[CyborgDB Evaluation Report](./docs/CYBORG_EVALUATION_REPORT.md)** - Comprehensive technical analysis, benchmarks, and findings
-- **[Demo Video Script](./DEMO_VIDEO.md)** - Complete recording guide and feature walkthrough
+
 
 ### Additional Documentation
 

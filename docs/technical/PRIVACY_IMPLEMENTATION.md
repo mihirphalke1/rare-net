@@ -35,16 +35,16 @@ We designed 5 rigorous tests targeting different attack vectors:
 
 ## Findings
 
-### ✅ **Tests Passed (7/9)**
+### **Tests Passed (7/9)**
 
 #### 1. Boundary Condition Testing (5/5 passed)
 
 **What we tested:**
-- Cohort size 3: Should BLOCK ✅
-- Cohort size 4: Should BLOCK ✅
-- Cohort size 5: Should RETURN ✅
-- Cohort size 6: Should RETURN ✅
-- Cohort size 10: Should RETURN ✅
+- Cohort size 3: Should BLOCK
+- Cohort size 4: Should BLOCK
+- Cohort size 5: Should RETURN
+- Cohort size 6: Should RETURN
+- Cohort size 10: Should RETURN
 
 **Result**: K-anonymity threshold is correctly enforced at all boundary conditions.
 
@@ -56,12 +56,12 @@ We designed 5 rigorous tests targeting different attack vectors:
 
 **Attack simulation:**
 ```
-Step 1: Generic query (100 matches)  → Confidence: 0.2506
-Step 2: Intermediate (50 matches)    → Confidence: 0.2604
-Step 3: Specific (15 matches)        → Confidence: 0.2758
-Step 4: Very specific (8 matches)    → Confidence: 0.2502
-Step 5: At threshold (5 matches)     → Confidence: 0.4049
-Step 6: Rare disease (3 matches)     → BLOCKED
+Step 1: Generic query (100 matches)  -> Confidence: 0.2506
+Step 2: Intermediate (50 matches)    -> Confidence: 0.2604
+Step 3: Specific (15 matches)        -> Confidence: 0.2758
+Step 4: Very specific (8 matches)    -> Confidence: 0.2502
+Step 5: At threshold (5 matches)     -> Confidence: 0.4049
+Step 6: Rare disease (3 matches)     -> BLOCKED
 ```
 
 **Result**: No significant confidence drops that would reveal threshold proximity.
@@ -82,7 +82,7 @@ Step 6: Rare disease (3 matches)     → BLOCKED
 
 ---
 
-### ⚠️ **Vulnerabilities Found (2)**
+### **Vulnerabilities Found (2)**
 
 #### Vulnerability #1: Deterministic Behavior at Threshold
 
@@ -114,7 +114,7 @@ if cohort_size == self.k_min:
     if random.random() < 0.2:
         return {'blocked': True, 'reason': 'Privacy protection'}
     
-    # Add ±5% noise to confidence
+    # Add +/-5% noise to confidence
     confidence = base_confidence * (1 + random.uniform(-0.05, 0.05))
 ```
 
@@ -182,7 +182,7 @@ Multi-institutional deployments need temporal privacy protection to prevent trac
    confidence = base_confidence * (1 + random.uniform(-0.05, 0.05))
    ```
    - Prevents exact cohort size inference
-   - Minimal impact on utility (±5% is acceptable)
+   - Minimal impact on utility (+/-5% is acceptable)
 
 2. **Randomize Response at Threshold**
    ```python
@@ -317,7 +317,7 @@ All test results are saved to `k_anonymity_test_results.json` for audit purposes
 
 ### What This Testing Demonstrates
 
-1. **Rigorous Validation**: We didn't just claim privacy protection—we tested it
+1. **Rigorous Validation**: We didn't just claim privacy protection-we tested it
 2. **Honest Assessment**: We found real vulnerabilities and documented them
 3. **Actionable Recommendations**: Every finding has a concrete fix
 4. **Product Insight**: Identified gaps CyborgDB should address
@@ -336,10 +336,10 @@ All test results are saved to `k_anonymity_test_results.json` for audit purposes
 
 ### Next Steps
 
-1. ✅ Implement recommended fixes (confidence noise, randomized response)
-2. ✅ Re-run tests to validate fixes
-3. ✅ Document fixes in submission
-4. ✅ Include testing methodology in demo
+1. Implement recommended fixes (confidence noise, randomized response)
+2. Re-run tests to validate fixes
+3. Document fixes in submission
+4. Include testing methodology in demo
 
 ---
 
@@ -356,7 +356,7 @@ Full test implementation available at:
 
 ---
 
-**This testing demonstrates that RareNet doesn't just implement privacy—we validate it rigorously.**
+**This testing demonstrates that RareNet doesn't just implement privacy-we validate it rigorously.**
 
 **This is what separates production-ready systems from hackathon demos.**
 

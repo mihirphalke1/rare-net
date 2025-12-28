@@ -11,10 +11,10 @@
 ## Executive Summary
 
 RareNet achieves **production-ready performance** for healthcare applications:
-- ✅ p95 latency: 156ms (well under 500ms healthcare requirement)
-- ✅ Encryption overhead: 7.6% (negligible)
-- ✅ Throughput: 45 queries/second (sufficient for hospital network)
-- ✅ 100% uptime during testing
+- p95 latency: 156ms (well under 500ms healthcare requirement)
+- Encryption overhead: 7.6% (negligible)
+- Throughput: 45 queries/second (sufficient for hospital network)
+- 100% uptime during testing
 
 ---
 
@@ -72,7 +72,7 @@ for i in range(100):
 - p99 spikes to 307ms likely due to garbage collection or OS scheduling
 - Consistent performance across all hospitals (variance < 5%)
 
-**Verdict:** ✅ **Excellent - Production ready**
+**Verdict:** **Excellent - Production ready**
 
 ---
 
@@ -116,7 +116,7 @@ for i in range(100):
 
 | Approach | p95 Latency | Improvement |
 |----------|-------------|-------------|
-| Sequential (3 × single) | 468ms | Baseline |
+| Sequential (3 x single) | 468ms | Baseline |
 | Parallel (our impl) | 168ms | **2.8x faster** |
 
 **Interpretation:**
@@ -124,7 +124,7 @@ for i in range(100):
 - 2.8x faster than sequential approach
 - Still well under 500ms healthcare requirement
 
-**Verdict:** ✅ **Excellent - Parallelization works**
+**Verdict:** **Excellent - Parallelization works**
 
 ---
 
@@ -163,7 +163,7 @@ for i in range(100):
 - 7.6% overhead is **negligible** for healthcare applications
 - Trade-off: 11ms latency for HIPAA compliance = excellent
 
-**Verdict:** ✅ **Excellent - Minimal overhead**
+**Verdict:** **Excellent - Minimal overhead**
 
 ---
 
@@ -219,7 +219,7 @@ Headroom: 9 / 0.028 = 321x
 Verdict: Can support 32,100 doctors (massive headroom)
 ```
 
-**Verdict:** ✅ **Excellent - Plenty of capacity**
+**Verdict:** **Excellent - Plenty of capacity**
 
 ---
 
@@ -262,7 +262,7 @@ overhead = with_privacy_latency - no_privacy_latency
 - Negligible compared to query time
 - Privacy is "free" from performance perspective
 
-**Verdict:** ✅ **Excellent - Privacy has minimal cost**
+**Verdict:** **Excellent - Privacy has minimal cost**
 
 ---
 
@@ -311,7 +311,7 @@ results = await query_all_hospitals(query_vector, timeout=500ms)
 
 **Interpretation:** System handles failures gracefully
 
-**Verdict:** ✅ **Good - Graceful degradation under stress**
+**Verdict:** **Good - Graceful degradation under stress**
 
 ---
 
@@ -352,7 +352,7 @@ for model_name in models:
 
 **Recommendation:** Use BioBERT for production (accuracy matters more than 27ms)
 
-**Verdict:** ✅ **BioBERT recommended for healthcare**
+**Verdict:** **BioBERT recommended for healthcare**
 
 ---
 
@@ -360,11 +360,11 @@ for model_name in models:
 
 | Requirement | Target | RareNet | Status |
 |-------------|--------|---------|--------|
-| Query latency (p95) | < 500ms | 156ms | ✅ 3.2x faster |
-| Encryption overhead | < 20% | 7.6% | ✅ 2.6x better |
-| Uptime | > 99% | 100% | ✅ Perfect |
-| Throughput | > 1 q/s | 9 q/s | ✅ 9x better |
-| Concurrent users | > 10 | 50+ | ✅ 5x better |
+| Query latency (p95) | < 500ms | 156ms | 3.2x faster |
+| Encryption overhead | < 20% | 7.6% | 2.6x better |
+| Uptime | > 99% | 100% | Perfect |
+| Throughput | > 1 q/s | 9 q/s | 9x better |
+| Concurrent users | > 10 | 50+ | 5x better |
 
 **Overall:** RareNet **exceeds** all healthcare performance requirements
 
@@ -418,16 +418,16 @@ for model_name in models:
 ## Key Findings
 
 ### What Works Exceptionally Well
-1. ✅ **CyborgDB query performance:** 90ms for 30k vectors is excellent
-2. ✅ **Encryption overhead:** 7.6% is negligible
-3. ✅ **Parallel queries:** 2.8x faster than sequential
-4. ✅ **Privacy aggregation:** Only 7ms overhead
-5. ✅ **Stability:** 100% uptime, no crashes
+1. **CyborgDB query performance:** 90ms for 30k vectors is excellent
+2. **Encryption overhead:** 7.6% is negligible
+3. **Parallel queries:** 2.8x faster than sequential
+4. **Privacy aggregation:** Only 7ms overhead
+5. **Stability:** 100% uptime, no crashes
 
 ### What Could Be Improved
-1. ⚠️ **Embedding generation:** 30% of total time (use GPU)
-2. ⚠️ **Batch API:** Would simplify client code
-3. ⚠️ **Caching:** Common queries could be cached
+1. **Embedding generation:** 30% of total time (use GPU)
+2. **Batch API:** Would simplify client code
+3. **Caching:** Common queries could be cached
 
 ### Surprising Results
 1. **Privacy is free:** 7ms overhead is negligible
@@ -454,10 +454,10 @@ for model_name in models:
 ## Conclusion
 
 RareNet achieves **production-ready performance** on CyborgDB:
-- ✅ p95 latency: 156ms (3.2x faster than required)
-- ✅ Encryption overhead: 7.6% (negligible)
-- ✅ Throughput: 9 q/s (sufficient for 100+ doctors)
-- ✅ Stability: 100% uptime
+- p95 latency: 156ms (3.2x faster than required)
+- Encryption overhead: 7.6% (negligible)
+- Throughput: 9 q/s (sufficient for 100+ doctors)
+- Stability: 100% uptime
 
 **Verdict:** Ready for production deployment in healthcare networks.
 
@@ -492,5 +492,5 @@ Max: 456ms
 ---
 
 **Benchmark Version:** 1.0  
-**Last Updated:** December 20, 2025  
+**Last Updated:** December 2025  
 **Reproducibility:** All benchmarks can be reproduced with `python benchmarks/run_all.py`

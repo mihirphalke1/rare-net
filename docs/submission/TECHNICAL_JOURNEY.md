@@ -4,7 +4,7 @@
 
 ---
 
-## 📧 The Feedback That Changed Everything
+## The Feedback That Changed Everything
 
 Early in development, we received guidance from **Charlcye Chen** (CyborgDB Team) that fundamentally reshaped our architecture:
 
@@ -15,18 +15,18 @@ Early in development, we received guidance from **Charlcye Chen** (CyborgDB Team
 We initially believed CyborgDB alone could solve cross-institution privacy. **We were wrong.**
 
 CyborgDB prevents:
-- ✅ Database breaches (embeddings encrypted at rest)
-- ✅ Man-in-the-middle attacks (encrypted in transit)
-- ✅ Unauthorized server access (encrypted during search)
+- Database breaches (embeddings encrypted at rest)
+- Man-in-the-middle attacks (encrypted in transit)
+- Unauthorized server access (encrypted during search)
 
 CyborgDB cannot prevent:
-- ❌ Authorized querying party seeing which hospitals have matches
-- ❌ Inference attacks ("If I get a result, Hospital X must have this rare disease")
-- ❌ Re-identification of ultra-rare cases (k=1 or k=2 matches)
+- Authorized querying party seeing which hospitals have matches
+- Inference attacks ("If I get a result, Hospital X must have this rare disease")
+- Re-identification of ultra-rare cases (k=1 or k=2 matches)
 
 ---
 
-## 🏗️ Architectural Evolution
+## Architectural Evolution
 
 ### Initial Architecture (Naive)
 ```
@@ -34,7 +34,7 @@ Hospital A → CyborgDB Search → Raw Results (score, hospital, case ID)
                                 ↓
                          "Hospital B has 1 match"
                                 ↓
-                    🚨 PRIVACY LEAK: Ultra-rare case identified
+                    PRIVACY LEAK: Ultra-rare case identified
 ```
 
 ### Final Architecture (Privacy-Preserving)
@@ -47,19 +47,19 @@ CyborgDB Layer (Tier 1)
     └─ Encrypted Search (London index)
     ↓
 Privacy Aggregator (Tier 2)
-    ├─ Check: unique_hospitals ≥ 2? ❌ Block
-    ├─ Check: total_matches ≥ 5? ❌ Block (K-Anonymity)
+    ├─ Check: unique_hospitals ≥ 2? Block
+    ├─ Check: total_matches ≥ 5? Block (K-Anonymity)
     ├─ Add Laplace Noise (ε=0.1) to counts
     └─ Sanitize Output (remove hospital identifiers)
     ↓
 Final Output: "90% confidence: Ehlers-Danlos Syndrome"
               "Recommended: Genetic panel for COL5A1/COL5A2"
-              🔒 No hospital names, no case IDs, no counts exposed
+              No hospital names, no case IDs, no counts exposed
 ```
 
 ---
 
-## 🛡️ Two-Tier Privacy Model
+## Two-Tier Privacy Model
 
 ### Tier 1: CyborgDB Encryption Layer
 
@@ -84,8 +84,8 @@ cyborg_service.create_index("rarenet_london", index_key=LONDON_KEY)
 - Even database admin cannot read embeddings without keys
 
 **Threat Model**:
-- ✅ Protects against: Database breach, insider threats, stolen backups
-- ❌ Does NOT protect against: Authorized query inference, output analysis
+- Protects against: Database breach, insider threats, stolen backups
+- Does NOT protect against: Authorized query inference, output analysis
 
 ---
 
@@ -135,7 +135,7 @@ Strong privacy guarantee. Lower epsilon = more privacy but less accuracy. ε=0.1
 
 #### 3. Output Sanitization
 ```python
-# ❌ NEVER return this:
+# NEVER return this:
 {
     "matches": [
         {"hospital": "boston", "patient_id": "abc123", "score": 0.95},
@@ -143,7 +143,7 @@ Strong privacy guarantee. Lower epsilon = more privacy but less accuracy. ε=0.1
     ]
 }
 
-# ✅ ALWAYS return this:
+# ALWAYS return this:
 {
     "diagnosis": "Ehlers-Danlos Syndrome",
     "confidence": 0.92,  # Noised
@@ -155,7 +155,7 @@ Strong privacy guarantee. Lower epsilon = more privacy but less accuracy. ε=0.1
 
 ---
 
-## 🧪 Privacy Testing: The Ghost Case
+## Privacy Testing: The Ghost Case
 
 To validate our privacy guarantees, we seeded a **"Ghost Case"**: Stiff Person Syndrome with only **2 patients** (both in Boston).
 
@@ -180,16 +180,16 @@ Expected: Privacy block (k=2 < 5)
 }
 ```
 
-✅ **Success**: System correctly blocks ultra-rare conditions to prevent patient identification.
+**Success**: System correctly blocks ultra-rare conditions to prevent patient identification.
 
 ---
 
-## 📊 Privacy vs. Utility Trade-offs
+## Privacy vs. Utility Trade-offs
 
 ### Successful Query (Ehlers-Danlos Syndrome, k=45)
 ```
 Raw Matches: 45 cases across 3 hospitals
-After K-Anonymity: ✅ Passed (45 ≥ 5)
+After K-Anonymity: Passed (45 ≥ 5)
 After Differential Privacy: 
   - Raw confidence: 96.3%
   - Noised confidence: 94.7% (ε=0.1)
@@ -201,7 +201,7 @@ Result: High confidence diagnosis delivered with privacy guarantees
 ### Blocked Query (Stiff Person Syndrome, k=2)
 ```
 Raw Matches: 2 cases in 1 hospital
-After K-Anonymity: ❌ BLOCKED (2 < 5)
+After K-Anonymity: BLOCKED (2 < 5)
 Result: No data returned to protect patient anonymity
 
 Alternative Path: System recommends direct specialist consultation
@@ -209,7 +209,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 🔬 Technical Decisions & Rationale
+## Technical Decisions & Rationale
 
 ### Why CyborgDB?
 **Decision**: Use CyborgDB for per-hospital encryption  
@@ -241,7 +241,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 🏥 Real-World Deployment Considerations
+## Real-World Deployment Considerations
 
 ### What We Built (Demo)
 - 3 hospitals, 146 patients
@@ -260,7 +260,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 🎯 Addressing CyborgDB Team Feedback
+## Addressing CyborgDB Team Feedback
 
 ### Original Concern
 > "For truly rare conditions (single-digit cases globally), any system that reveals 'a match exists at Institution X' is inherently identifying, regardless of encryption."
@@ -272,14 +272,14 @@ Alternative Path: System recommends direct specialist consultation
 4. **Return diagnostic insights only**, not case counts or locations
 
 ### Validation
-- Ghost case (k=2) correctly blocked ✅
-- Common disease (k=45) returns useful diagnosis ✅
-- No hospital names in any API response ✅
-- Audit logs prove privacy-preserving operation ✅
+- Ghost case (k=2) correctly blocked
+- Common disease (k=45) returns useful diagnosis
+- No hospital names in any API response
+- Audit logs prove privacy-preserving operation
 
 ---
 
-## 🚀 What We Learned
+## What We Learned
 
 1. **Encryption ≠ Privacy**: CyborgDB solves data security, not inference privacy
 2. **Privacy is Compositional**: Combine multiple techniques (k-anonymity + DP + output sanitization)
@@ -288,7 +288,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 📈 Metrics & Impact
+## Metrics & Impact
 
 | Metric | Value |
 |--------|-------|
@@ -297,11 +297,11 @@ Alternative Path: System recommends direct specialist consultation
 | K-Anonymity False Positives | 0% (no valid queries blocked) |
 | Differential Privacy Utility Loss | 1.6% average confidence degradation |
 | Vector Inversion Protection | 100% (CyborgDB encryption) |
-| HIPAA/GDPR Compliance | ✅ No PHI exposure |
+| HIPAA/GDPR Compliance | No PHI exposure |
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 1. **Secure Multi-Party Computation (SMPC)**: Allow hospitals to jointly compute aggregates without revealing individual contributions
 2. **Genomic Privacy**: Extend to genetic data with homomorphic encryption
@@ -310,7 +310,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 📚 References
+## References
 
 - Sweeney, L. (2002). "k-anonymity: A model for protecting privacy"
 - Morris et al. (2023). "Vec2Text: Embedding Inversion Attacks" (92% success rate)
@@ -319,7 +319,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 **Charlcye Chen & CyborgDB Team**: For the critical feedback that led us to build a proper two-tier privacy architecture. This project would not have achieved real-world privacy guarantees without your guidance.
 
@@ -327,6 +327,6 @@ Alternative Path: System recommends direct specialist consultation
 
 **RareNet**: Privacy-Preserving. Clinically Useful. Lives Saved.
 
-**Team**: Aakanksha Singh & Mihir Phalke  
+**Team**: Mihir Phalke & Aakanksha Singh  
 **Hackathon**: CyborgDB'25  
 **Location**: Mumbai, India

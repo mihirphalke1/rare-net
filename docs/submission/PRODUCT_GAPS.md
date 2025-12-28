@@ -213,18 +213,7 @@ We created a complete deployment checklist (see `HEALTHCARE_DEPLOYMENT_GUIDE.md`
   - [ ] All queries logged (who, what, when)
   - [ ] Immutable audit trail
   - [ ] Breach detection
-
-## Phase 3: Multi-Institutional Setup
-- [ ] Each hospital has separate encryption key
-- [ ] Key isolation verified
-- [ ] Aggregation layer configured
-- [ ] K-anonymity threshold set (min 5 for rare diseases)
-
-## Phase 4: Testing
-- [ ] Load testing (realistic query patterns)
-- [ ] Failover testing (hospital offline scenarios)
-- [ ] Security testing (access control, key isolation)
-- [ ] Privacy testing (k-anonymity enforcement)
+...
 ```
 
 ### How CyborgDB Should Integrate This
@@ -351,10 +340,10 @@ class PrivacyPreservingAggregator:
 ```
 
 **Key features:**
-1. ✅ **Source hiding**: Never reveal which hospital has matches
-2. ✅ **K-anonymity**: Only return results if ≥5 matches (configurable)
-3. ✅ **Differential privacy**: Optional noise on aggregated results
-4. ✅ **Weighted voting**: Aggregate diagnoses without exposing individual cases
+1. **Source hiding**: Never reveal which hospital has matches
+2. **K-anonymity**: Only return results if >=5 matches (configurable)
+3. **Differential privacy**: Optional noise on aggregated results
+4. **Weighted voting**: Aggregate diagnoses without exposing individual cases
 
 ### How CyborgDB Should Integrate This
 
@@ -479,7 +468,7 @@ Risk Assessment:
 - Risk Score: 80% (HIGH)
 - High-Risk Terms: ['brca1']
 - Demographics: Yes (age, gender)
-- Recommendation: Apply stronger differential privacy (ε=0.05)
+- Recommendation: Apply stronger differential privacy (e=0.05)
 ```
 
 ### How CyborgDB Should Integrate This
@@ -564,13 +553,13 @@ cyborg assess-risk \
 
 **CyborgDB has exceptional encryption technology.**
 
-**But the gap isn't crypto—it's enterprise deployment.**
+**But the gap isn't crypto-it's enterprise deployment.**
 
 Healthcare customers need:
-- ✅ Data validation (is MY data safe?)
-- ✅ Deployment guidance (how do I achieve HIPAA compliance?)
-- ✅ Multi-institutional best practices (how do I aggregate safely?)
-- ✅ Risk assessment (what's the residual risk?)
+- Data validation (is MY data safe?)
+- Deployment guidance (how do I achieve HIPAA compliance?)
+- Multi-institutional best practices (how do I aggregate safely?)
+- Risk assessment (what's the residual risk?)
 
 **We built all four. CyborgDB can integrate them.**
 
@@ -581,12 +570,12 @@ Healthcare customers need:
 ## Our Contribution
 
 We're providing:
-1. ✅ Working reference implementation (RareNet)
-2. ✅ Pre-encryption validation framework
-3. ✅ Healthcare deployment checklist
-4. ✅ Multi-institutional aggregation layer
-5. ✅ Risk assessment framework
-6. ✅ Complete documentation
+1. Working reference implementation (RareNet)
+2. Pre-encryption validation framework
+3. Healthcare deployment checklist
+4. Multi-institutional aggregation layer
+5. Risk assessment framework
+6. Complete documentation
 
 **CyborgDB can use this to:**
 - Accelerate healthcare sales

@@ -22,9 +22,9 @@ We benchmarked three deployment approaches with 3 hospitals, 10,000 vectors each
 
 **How it works:**
 ```
-Query Hospital A → wait for result
-Query Hospital B → wait for result  
-Query Hospital C → wait for result
+Query Hospital A wait for result
+Query Hospital B wait for result  
+Query Hospital C wait for result
 Return raw similarity scores to client
 ```
 
@@ -44,7 +44,7 @@ Return raw similarity scores to client
 
 **How it works:**
 ```
-Query Hospital A, B, C in parallel → faster
+Query Hospital A, B, C in parallel -> faster
 Return raw similarity scores to client
 ```
 
@@ -54,10 +54,10 @@ Return raw similarity scores to client
 - **Problem**: Fast but PRIVACY LEAKAGE (raw scores)
 
 **Why it's better but still bad:**
-1. ✅ Parallel queries (fast)
-2. ❌ Raw similarity scores still exposed
-3. ❌ Hospital identifiers still visible
-4. ❌ No privacy checks
+1. Parallel queries (fast)
+2. Raw similarity scores still exposed (Bad)
+3. Hospital identifiers still visible (Bad)
+4. No privacy checks (Bad)
 
 ---
 
@@ -65,9 +65,9 @@ Return raw similarity scores to client
 
 **How it works:**
 ```
-Query Hospital A, B, C in parallel → fast
-Aggregate server-side → privacy
-Check k-anonymity → safety
+Query Hospital A, B, C in parallel -> fast
+Aggregate server-side -> privacy
+Check k-anonymity -> safety
 Return ONLY diagnostic insights (no raw scores)
 ```
 
@@ -78,11 +78,11 @@ Return ONLY diagnostic insights (no raw scores)
 - **Benefit**: FAST + PRIVATE + SAFE
 
 **Why it's best:**
-1. ✅ Parallel queries (as fast as Approach B)
-2. ✅ Server-side aggregation (no raw scores exposed)
-3. ✅ K-anonymity enforcement (unsafe queries blocked)
-4. ✅ No hospital identifiers (source hiding)
-5. ✅ Minimal privacy risk (1.2% vs 19.9%)
+1. Parallel queries (as fast as Approach B)
+2. Server-side aggregation (no raw scores exposed)
+3. K-anonymity enforcement (unsafe queries blocked)
+4. No hospital identifiers (source hiding)
+5. Minimal privacy risk (1.2% vs 19.9%)
 
 ---
 
@@ -90,10 +90,10 @@ Return ONLY diagnostic insights (no raw scores)
 
 | Metric | Approach A (Naive) | Approach B (Common) | Approach C (RareNet) |
 |--------|-------------------|---------------------|----------------------|
-| **Latency p95** | 136ms | 52ms | **52ms** ✅ |
-| **Privacy Risk** | 19.9% | 19.9% | **1.2%** ✅ |
-| **Inference Attack Success** | 19.9% | 19.9% | **1.2%** ✅ |
-| **Queries Blocked (Safety)** | 0 | 0 | **Automatic** ✅ |
+| **Latency p95** | 136ms | 52ms | **52ms** |
+| **Privacy Risk** | 19.9% | 19.9% | **1.2%** |
+| **Inference Attack Success** | 19.9% | 19.9% | **1.2%** |
+| **Queries Blocked (Safety)** | 0 | 0 | **Automatic** |
 
 ---
 
@@ -110,7 +110,7 @@ Performance difference: Negligible (~1ms)
 
 **Implication**: Privacy-preserving aggregation does NOT slow down queries.
 
-**Note**: RareNet is 60% faster than naive sequential approach (133ms → 52ms), but the real comparison is against Approach B (the one people would actually use).
+**Note**: RareNet is 60% faster than naive sequential approach (133ms -> 52ms), but the real comparison is against Approach B (the one people would actually use).
 
 ---
 
@@ -146,9 +146,9 @@ RareNet: Automatically blocks queries with insufficient data
 
 **RareNet proves**: "You can have both. Here's the measured proof."
 
-- ✅ Same speed as standard parallel approach (52ms vs 52ms)
-- ✅ 94% lower privacy risk
-- ✅ Automatic safety checks
+- Same speed as standard parallel approach (52ms vs 52ms)
+- 94% lower privacy risk
+- Automatic safety checks
 
 **Result**: No tradeoff required.
 
@@ -162,9 +162,9 @@ RareNet: Automatically blocks queries with insufficient data
 
 **RareNet provides**: Reference architecture with measured validation
 
-- ✅ Proven to be fast (52ms p95)
-- ✅ Proven to be private (1.2% risk vs 19.9%)
-- ✅ Proven to be safe (k-anonymity enforced)
+- Proven to be fast (52ms p95)
+- Proven to be private (1.2% risk vs 19.9%)
+- Proven to be safe (k-anonymity enforced)
 
 **Result**: CyborgDB can recommend this architecture with confidence.
 
