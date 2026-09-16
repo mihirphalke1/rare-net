@@ -4,6 +4,7 @@ Authentication Router for RareNet
 Provides REST API endpoints for user authentication and management.
 """
 
+import os
 from datetime import timedelta, datetime
 from fastapi import APIRouter, HTTPException, status, Depends, Body
 
@@ -272,14 +273,24 @@ async def list_users(
 @router.post("/seed-demo-users")
 async def seed_demo():
     """
-    Seed demo users for hackathon demo.
-    
+    Seed demo users for local/demo environments.
+
+    Creates well-known demo accounts (including an admin with a published
+    password), so this is disabled whenever ENVIRONMENT=production — an
+    unauthenticated caller must not be able to plant a known admin login on
+    a real deployment. Set ENVIRONMENT=production in production secrets.
+
     Creates:
     - doctor@mumbai.hospital (password: password123)
     - doctor@boston.hospital (password: password123)
     - doctor@london.hospital (password: password123)
     - admin@rarenet.org (password: admin123)
     """
+    if os.getenv("ENVIRONMENT", "development").lower() == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Demo user seeding is disabled in production."
+        )
     try:
         seed_demo_users()
         return {"message": "Demo users seeded successfully"}

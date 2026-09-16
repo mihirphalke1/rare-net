@@ -6,7 +6,7 @@
 
 ## The Feedback That Changed Everything
 
-Early in development, we received guidance from **Charlcye Chen** (CyborgDB Team) that fundamentally reshaped our architecture:
+Early in development, we received guidance from **Charlcye Mitchell** (CyborgDB Team) that fundamentally reshaped our architecture:
 
 > *"CyborgDB's encryption-in-use protects the vector database from exposure in case of unauthorized access. However, for cross-institution scenarios, the querying party does receive decrypted results of only the relevant query vectors to their client. This means CyborgDB is excellent for protecting each hospital's data store, but the cross-institution privacy guarantees you're describing would require an additional layer."*
 
@@ -80,7 +80,7 @@ cyborg_service.create_index("rarenet_london", index_key=LONDON_KEY)
 
 **Protection**:
 - Vectors encrypted with AES-256 before storage
-- Search operates on encrypted vectors (homomorphic properties)
+- Search uses searchable symmetric encryption over an IVF index — not homomorphic encryption; candidate results are decrypted for final re-ranking, not the whole index
 - Even database admin cannot read embeddings without keys
 
 **Threat Model**:
@@ -112,7 +112,7 @@ if unique_matches < K_ANONYMITY_THRESHOLD:  # K=5
 ```
 
 **Why k=5?**  
-Research shows k≥5 prevents 99.7% of re-identification attacks in medical contexts ([Sweeney, 2002](https://dataprivacylab.org/projects/identifiability/)).
+k=5 is a common minimum-cell-size convention in health data releases (see [Sweeney, 2002](https://dataprivacylab.org/projects/identifiability/) on k-anonymity), chosen here as a practical threshold rather than tuned against a specific re-identification measurement on this dataset.
 
 #### 2. Differential Privacy Noise
 ```python
@@ -321,7 +321,7 @@ Alternative Path: System recommends direct specialist consultation
 
 ## Acknowledgments
 
-**Charlcye Chen & CyborgDB Team**: For the critical feedback that led us to build a proper two-tier privacy architecture. This project would not have achieved real-world privacy guarantees without your guidance.
+**Charlcye Mitchell & CyborgDB Team**: For the critical feedback that led us to build a proper two-tier privacy architecture. This project would not have achieved real-world privacy guarantees without your guidance.
 
 ---
 

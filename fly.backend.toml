@@ -11,7 +11,12 @@ primary_region = "sjc"
   # Set these via flyctl secrets:
   # flyctl secrets set CYBORGDB_URL=https://rarenet-cyborgdb.fly.dev
   # flyctl secrets set CYBORGDB_API_KEY=your_key
+  # flyctl secrets set JWT_SECRET_KEY=your_random_secret
+  # flyctl secrets set CYBORGDB_MASTER_INDEX_KEY=your_random_hex_key
   PORT = "8000"
+  # Disables POST /auth/seed-demo-users, which otherwise lets anyone plant a
+  # well-known admin login (admin@rarenet.org / admin123) on a fresh deploy.
+  ENVIRONMENT = "production"
 
 [http_service]
   internal_port = 8000

@@ -8,6 +8,7 @@ In production, replace with a proper database.
 import os
 import json
 import uuid
+from threading import RLock
 from typing import Optional, List
 from datetime import datetime
 from pathlib import Path
@@ -18,6 +19,10 @@ from .jwt_handler import hash_password
 # Path to user storage file
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 USERS_FILE = DATA_DIR / "users.json"
+
+# Reentrant so a locked function (e.g. create_user) can call another
+# locked function (e.g. get_user_by_email) without deadlocking itself.
+_users_lock = RLock()
 
 
 def _ensure_data_dir():
@@ -110,31 +115,32 @@ def create_user(user_create: UserCreate) -> UserInDB:
     Raises:
         ValueError: If email already exists
     """
-    # Check if email already exists
-    if get_user_by_email(user_create.email):
-        raise ValueError(f"User with email {user_create.email} already exists")
-    
-    # Create user object
-    user_id = str(uuid.uuid4())
-    hashed_password = hash_password(user_create.password)
-    
-    user_data = {
-        "id": user_id,
-        "email": user_create.email,
-        "hashed_password": hashed_password,
-        "role": user_create.role,
-        "hospital": user_create.hospital,
-        "full_name": user_create.full_name,
-        "is_active": True,
-        "created_at": datetime.utcnow().isoformat()
-    }
-    
-    # Save to file
-    users = _load_users()
-    users.append(user_data)
-    _save_users(users)
-    
-    return UserInDB(**user_data)
+    with _users_lock:
+        # Check if email already exists
+        if get_user_by_email(user_create.email):
+            raise ValueError(f"User with email {user_create.email} already exists")
+
+        # Create user object
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(user_create.password)
+
+        user_data = {
+            "id": user_id,
+            "email": user_create.email,
+            "hashed_password": hashed_password,
+            "role": user_create.role,
+            "hospital": user_create.hospital,
+            "full_name": user_create.full_name,
+            "is_active": True,
+            "created_at": datetime.utcnow().isoformat()
+        }
+
+        # Save to file
+        users = _load_users()
+        users.append(user_data)
+        _save_users(users)
+
+        return UserInDB(**user_data)
 
 
 def update_user_password(user_id: str, new_password: str) -> bool:
@@ -148,15 +154,16 @@ def update_user_password(user_id: str, new_password: str) -> bool:
     Returns:
         True if updated, False if user not found
     """
-    users = _load_users()
-    
-    for user_data in users:
-        if user_data.get("id") == user_id:
-            user_data["hashed_password"] = hash_password(new_password)
-            _save_users(users)
-            return True
-    
-    return False
+    with _users_lock:
+        users = _load_users()
+
+        for user_data in users:
+            if user_data.get("id") == user_id:
+                user_data["hashed_password"] = hash_password(new_password)
+                _save_users(users)
+                return True
+
+        return False
 
 
 def get_all_users() -> List[UserInDB]:
@@ -175,16 +182,17 @@ def delete_user(user_id: str) -> bool:
     Returns:
         True if deleted, False if not found
     """
-    users = _load_users()
-    original_count = len(users)
-    
-    users = [u for u in users if u.get("id") != user_id]
-    
-    if len(users) < original_count:
-        _save_users(users)
-        return True
-    
-    return False
+    with _users_lock:
+        users = _load_users()
+        original_count = len(users)
+
+        users = [u for u in users if u.get("id") != user_id]
+
+        if len(users) < original_count:
+            _save_users(users)
+            return True
+
+        return False
 
 
 def seed_demo_users():

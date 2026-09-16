@@ -27,8 +27,8 @@ if (Test-Path $envPath) {
 }
 
 # Verify critical keys
-if (-not $env:CYBORGDB_ENCRYPTION_KEY) {
-    Write-Host "ERROR: CYBORGDB_ENCRYPTION_KEY not found in .env" -ForegroundColor Red
+if (-not $env:CYBORGDB_MASTER_INDEX_KEY) {
+    Write-Host "ERROR: CYBORGDB_MASTER_INDEX_KEY not found in .env" -ForegroundColor Red
     exit 1
 }
 
@@ -106,7 +106,7 @@ if ($tcpConnection) {
 # Construct command with explicit environment variables passed to the new shell
 # We format the env vars as $env:KEY='VAL'; ...
 $command = "cd backend; " +
-           "`$env:CYBORGDB_ENCRYPTION_KEY='$($env:CYBORGDB_ENCRYPTION_KEY)'; " +
+           "`$env:CYBORGDB_MASTER_INDEX_KEY='$($env:CYBORGDB_MASTER_INDEX_KEY)'; " +
            "`$env:CYBORGDB_API_KEY='$($env:CYBORGDB_API_KEY)'; " +
            "python -m uvicorn main:app --host 127.0.0.1 --port 8001 --reload"
 
@@ -179,8 +179,8 @@ Write-Host "  Frontend:  http://localhost:5173  (run 'npm run dev' if not starte
 Write-Host "  Backend:   http://localhost:8001"
 Write-Host "  CyborgDB:  http://localhost:8000"
 Write-Host ""
-Write-Host "Encryption Key:" -ForegroundColor Cyan
-Write-Host "  $($env:CYBORGDB_ENCRYPTION_KEY.Substring(0, 8))... (Matched & Loaded)"
+Write-Host "Master Index Key:" -ForegroundColor Cyan
+Write-Host "  $($env:CYBORGDB_MASTER_INDEX_KEY.Substring(0, 8))... (Matched & Loaded)"
 Write-Host ""
 Write-Host "Demo Instructions:" -ForegroundColor Cyan
 Write-Host "1. Open Frontend"

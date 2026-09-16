@@ -6,19 +6,21 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from cyborgdb import Client
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-# Correct credentials
-API_KEY = "cyborg_d754e642d7b94d05a4750d67a84b0efe"
-CORRECT_KEY = bytes.fromhex("deadbeef1234567890abcdef1234567890abcdef1234567890abcdef12345678")
+from app.services.cyborg_service import cyborg_service
 
-# WRONG key (attacker's key)
-WRONG_KEY = bytes.fromhex("0" * 128)  # All zeros
+# Real per-institution key, derived the same way the app does — not hardcoded.
+CORRECT_KEY = cyborg_service.get_index_key("mumbai")
+
+# WRONG key (attacker's key) — 32 bytes, matching the real key's length.
+WRONG_KEY = bytes(32)  # All zeros
 
 print("🔍 SECURITY AUDIT: Encryption Key Enforcement Test")
 print("=" * 60)
 
-client = Client(base_url="http://localhost:8000", api_key=API_KEY)
+client = cyborg_service.client
 
 # Test 1: Can we load an index with the WRONG key?
 print("\n[Test 1] Attempting to load 'rarenet_mumbai' with WRONG encryption key...")

@@ -206,12 +206,21 @@ class PrivacyAggregator:
                 score = match['score']
             else:
                 score = 0.5  # Default fallback
-            
+
             # Clamp score to valid range
             score = max(0.0, min(1.0, score))
-            if score == 0:
-                score = 0.01  # Avoid zero scores
-                
+
+            # A score of 0 means no real semantic overlap with the query — it's
+            # noise, not a weak vote. Counting it (even floored to a small
+            # nonzero value) lets a high-volume unrelated diagnosis outvote a
+            # true but rare match: a 2-case disease with a genuine 0.1 match
+            # loses to a 45-case disease whose only "matches" are irrelevant.
+            # Skipping zero-score matches keeps voting restricted to results
+            # with actual signal, so the top diagnosis reflects relevance
+            # rather than which disease has the most patients in the network.
+            if score <= 0:
+                continue
+
             diagnosis_scores[diagnosis] += score
             diagnosis_counts[diagnosis] += 1
         

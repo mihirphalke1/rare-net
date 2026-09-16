@@ -21,6 +21,9 @@ from typing import List
 # Add parent dir to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 from app.services.cyborg_service import cyborg_service
 
 def generate_random_vector(dim=384) -> List[float]:
@@ -40,11 +43,12 @@ def run_benchmark():
     print("\n[1/3] Setting up benchmark index...")
     # Using a temp index to not mess up production data
     index_name = "rarenet_benchmark_test"
+    benchmark_key = cyborg_service.get_index_key("benchmark_test")
     try:
         if index_name in cyborg_service.client.list_indexes():
             print(f"  - Index {index_name} exists, using it.")
         else:
-            cyborg_service.client.create_index(index_name, index_key=cyborg_service.demo_key)
+            cyborg_service.client.create_index(index_name, index_key=benchmark_key)
             print(f"  - Created {index_name}")
     except Exception as e:
         print(f"  ! Error: {e}")
@@ -53,9 +57,9 @@ def run_benchmark():
     # 2. Write Latency
     print("\n[2/3] Benchmarking WRITE (Upsert)...")
     write_latencies = []
-    
+
     # Load index wrapper
-    index = cyborg_service.client.load_index(index_name, index_key=cyborg_service.demo_key)
+    index = cyborg_service.client.load_index(index_name, index_key=benchmark_key)
     
     for i in range(50):
         vec = generate_random_vector()

@@ -71,7 +71,7 @@ RareNet implements defense-in-depth through two independent privacy layers:
 - Encryption-in-use via CyborgDB's encrypted vector store
 - Patient symptom vectors encrypted with AES-256
 - Database operators cannot decrypt stored vectors
-- Redis backend configured with AOF persistence
+- CyborgDB's standalone local storage with on-disk persistence
 
 **Guarantee:** Database dump reveals only encrypted vectors (computationally indistinguishable from random noise)
 
@@ -115,10 +115,12 @@ RareNet implements defense-in-depth through two independent privacy layers:
 ```
 
 **What this does:**
-1. Starts CyborgDB + Redis (Docker)
+1. Starts CyborgDB (Docker)
 2. Launches FastAPI backend (port 8001)
 3. Seeds 8 global hospitals with 146 patient records
 4. Runs privacy validation tests
+
+Requires `backend/.env` to already exist — see [SETUP.md](./SETUP.md) for the environment variables it needs.
 
 ### Start Frontend
 
@@ -239,8 +241,7 @@ We deployed CyborgDB in a realistic multi-tenant healthcare scenario and documen
 
 ### Core Infrastructure
 
-- **Vector Database:** CyborgDB v1.0 (Redis-backed, encrypted)
-- **Persistence Layer:** Redis 7.0 with AOF
+- **Vector Database:** CyborgDB 0.14.0 (encrypted, standalone local storage)
 - **Embedding Model:** all-MiniLM-L6-v2 (384-dimensional vectors)
 
 ### Backend Services

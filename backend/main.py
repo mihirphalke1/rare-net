@@ -18,10 +18,8 @@ from dotenv import load_dotenv
 load_dotenv()
 from typing import List, Optional, Literal
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Depends, Request, Response
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 
@@ -103,11 +101,11 @@ def get_embedding_model():
 
 class CaseReport(BaseModel):
     """Model for reporting a new confirmed case."""
-    symptoms: str = Field(..., min_length=10, description="Detailed symptom description")
-    diagnosis: str = Field(..., description="Confirmed diagnosis (must match known disease)")
+    symptoms: str = Field(..., min_length=10, max_length=2000, description="Detailed symptom description")
+    diagnosis: str = Field(..., max_length=200, description="Confirmed diagnosis (must match known disease)")
     patient_age_range: Literal["0-18", "19-40", "41-60", "60+"] = Field(..., description="Patient age range")
     patient_sex: Literal["M", "F", "Other"] = Field(..., description="Patient sex")
-    notes: Optional[str] = Field(None, description="Additional clinical notes")
+    notes: Optional[str] = Field(None, max_length=2000, description="Additional clinical notes")
 
 
 class CaseReportResponse(BaseModel):
@@ -307,9 +305,8 @@ def diagnose(
         )
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Diagnose request failed")
+        raise HTTPException(status_code=500, detail="Diagnosis request failed. Please try again.")
 
 
 # ============================================
@@ -405,9 +402,10 @@ def report_case(
     try:
         cyborg_service.store_patient(patient, symptom_vector)
     except Exception as e:
+        logger.exception("Failed to store case in encrypted database")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to store case in encrypted database: {str(e)}"
+            detail="Failed to store case in encrypted database. Please try again."
         )
     
     # Step 7: Update network stats
@@ -526,7 +524,8 @@ def add_patient(
         cyborg_service.store_patient(patient, vector)
         return {"message": f"Patient {patient.id} stored securely in {patient.institution_id}"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception(f"Failed to store patient {patient.id}")
+        raise HTTPException(status_code=500, detail="Failed to store patient record.")
 
 
 # ============================================

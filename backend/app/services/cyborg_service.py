@@ -44,16 +44,18 @@ def derive_index_key(institution_id: str, master_key_hex: Optional[str] = None) 
 
 class CyborgService:
     def __init__(self):
-        self.api_key = _require_env("CYBORGDB_API_KEY")
+        # CYBORGDB_API_KEY is the CyborgDB service's own license key, not a
+        # RareNet secret. Unset = the service runs in free tier (per the
+        # vendor's own service, this caps at 1M items per index, which is
+        # far more than this app needs); a real key only raises that cap.
+        self.api_key = os.getenv("CYBORGDB_API_KEY", "")
         self.base_url = os.getenv("CYBORGDB_URL", "http://localhost:8000")
 
         if not self.base_url.startswith("http"):
             self.base_url = f"http://{self.base_url}"
 
-        logger.info(
-            f"Connecting to CyborgDB at {self.base_url} "
-            f"(API key prefix: {self.api_key[:8]}...)"
-        )
+        key_display = f"{self.api_key[:8]}..." if self.api_key else "(unset — free tier)"
+        logger.info(f"Connecting to CyborgDB at {self.base_url} (API key: {key_display})")
 
         try:
             self.client = Client(base_url=self.base_url, api_key=self.api_key)

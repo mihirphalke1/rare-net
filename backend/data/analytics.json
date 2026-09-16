@@ -1,23 +1,16 @@
 {
-  "total_searches": 19,
-  "searches_today": 19,
-  "total_confidence_sum": 9.920000000000002,
+  "total_searches": 28,
+  "searches_today": 9,
+  "total_confidence_sum": 14.090000000000003,
   "disease_counts": {
     "Ehlers-Danlos Syndrome (Vascular Type)": 4,
-    "Ehlers-Danlos Syndrome": 9,
+    "Ehlers-Danlos Syndrome": 15,
     "Stiff Person Syndrome": 1,
-    "Kawasaki Disease": 5
+    "Kawasaki Disease": 6,
+    "Cystic Fibrosis": 1,
+    "TREX1 Lupus": 1
   },
   "hourly_searches": [
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    2,
-    3,
-    4,
     5,
     6,
     7,
@@ -32,7 +25,16 @@
     16,
     17,
     18,
-    19
+    19,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
   ],
-  "last_reset": "2025-12-28"
+  "last_reset": "2026-09-16"
 }

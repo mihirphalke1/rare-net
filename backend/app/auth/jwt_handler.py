@@ -18,8 +18,13 @@ load_dotenv()
 # Configuration
 # ============================================
 
-# Secret key for JWT signing - in production, use a secure random key
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "rarenet-super-secret-key-change-in-production-2024")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable is required. "
+        "Set it in backend/.env or your deployment secrets "
+        '(e.g. `python3 -c "import secrets; print(secrets.token_hex(32))"`).'
+    )
 ALGORITHM = "HS256"
 
 # Token expiry times

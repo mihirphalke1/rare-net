@@ -1,11 +1,11 @@
 from typing import Optional, Dict, List, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Patient(BaseModel):
     id: str
     institution_id: str
-    symptoms: str
+    symptoms: str = Field(..., max_length=2000)
     diagnosis: Optional[str] = None
     demographics: Dict[str, Any]
 
@@ -16,7 +16,7 @@ class SymptomVector(BaseModel):
 
 
 class SearchRequest(BaseModel):
-    symptoms: str
+    symptoms: str = Field(..., min_length=1, max_length=2000)
     top_k: int = 6
 
 

@@ -1,30 +1,22 @@
-version: '3.8'
-
 services:
   cyborgdb:
-    image: cyborginc/cyborgdb-service:latest
+    # Pinned to match backend/requirements.txt's cyborgdb==0.14.0 Python client.
+    # :latest (tested at v0.17.0) breaks store_patient()'s load_index() fallback
+    # logic — its IndexInfoResponseModel schema changed and the 0.14.0 client
+    # can't parse it, which cascades into every patient write failing. Bump
+    # both together if you upgrade.
+    image: cyborginc/cyborgdb-service:0.14.0
     ports:
       - "8000:8000"
-    environment:
-      - CYBORGDB_API_KEY=${CYBORGDB_API_KEY:?Set CYBORGDB_API_KEY in .env}
-      - CYBORGDB_DB_TYPE=redis
-      - CYBORGDB_CONNECTION_STRING=host:redis,port:6379,db:0
-    depends_on:
-      redis:
-        condition: service_healthy
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
+    env_file:
+      - ./backend/.env
+    # CYBORGDB_DB_TYPE intentionally unset: 0.14.0 uses its built-in standalone
+    # "valkeylite" store when unset (fine for local dev), and doesn't recognize
+    # "disk" (that's a later-version value). CYBORGDB_API_KEY comes from
+    # backend/.env via env_file above — 0.14.0 requires a real key to start;
+    # see SETUP.md for how to get one.
     volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      - cyborgdb-data:/app/cyborgdb_data
 
 volumes:
-  redis-data:
+  cyborgdb-data:

@@ -420,7 +420,7 @@ Clean API, minimal dependencies. Took <30 minutes to integrate.
 
 ## 10. Acknowledgments
 
-Thank you to the CyborgDB team (especially Charlcye Chen) for building a product that makes privacy-preserving medical AI possible. Your feedback on our architecture was invaluable, and we're excited to see where CyborgDB goes next.
+Thank you to the CyborgDB team (especially Charlcye Mitchell) for building a product that makes privacy-preserving medical AI possible. Your feedback on our architecture was invaluable, and we're excited to see where CyborgDB goes next.
 
 **Project**: https://github.com/mihirphalke1/rare-net
 

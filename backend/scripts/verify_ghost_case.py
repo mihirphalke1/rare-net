@@ -5,13 +5,16 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 from app.services.cyborg_service import cyborg_service
 
 print("🔍 Checking for Stiff Person Syndrome in Boston...")
 
 try:
     # Try to load Boston index
-    index = cyborg_service.client.load_index("rarenet_boston", index_key=cyborg_service.demo_key)
+    index = cyborg_service.client.load_index("rarenet_boston", index_key=cyborg_service.get_index_key("boston"))
     
     # Get all vectors
     print(f"✅ Boston index loaded")
